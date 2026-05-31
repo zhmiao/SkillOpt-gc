@@ -156,6 +156,12 @@ the `/si-promote` flow (with explicit user approval) — never directly.
   `dev_docs/lessons.md` instead.
 - **Never** chain multiple unrelated changes into one commit just
   because they were noticed together.
+- **Never** propagate fork-only defaults upstream.
+  `_BACKEND_DEFAULT_MODELS["copilot_cli_exec"] = "claude-opus-4.7-1m-internal"`
+  is an internal-only model and a fork-private default. If a slice
+  becomes cherry-pick-ready for `microsoft/SkillOpt`, replace this
+  default with a publicly-available model (e.g. `claude-sonnet-4.5`
+  or `gpt-5.5`) in the upstream-bound diff.
 
 ## When to ask the user vs. proceed
 

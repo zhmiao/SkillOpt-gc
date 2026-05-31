@@ -28,10 +28,42 @@ implementable slices are `COPILOT-1..9` in `dev_docs/ideas.md`.
       against SkillOpt requirements.
 - [x] Write `dev_docs/design/copilot_integration_plan.md`.
 - [x] Seed `dev_docs/ideas.md` with `COPILOT-1..9`.
-- [ ] User reads the plan, answers `dev_docs/design/copilot_integration_plan.md § C.3 Open questions`, and picks the slice order.
+- [x] User answered the six Open Questions (see `dev_docs/decisions.md`
+      entry "2026-05-31 — Copilot integration first-slice parameters").
+- [x] User chose source corpus for `stop_slop` env: `/home/miao/repos/HumanEmbedding`
+      with dataset_option=max, both pattern sources, 60/20/20 split, negatives included.
+
+### Phase 0.5 — `stop_slop` dataset construction (active now)
+Mine `/home/miao/repos/HumanEmbedding` for a labeled
+`(prose_in, banned_patterns, gold_rewrite?, source)` dataset.
+Three parallel extraction streams dispatched as background agents
+(see `dev_docs/design/dataset_construction_plan.md`).
+
+- [ ] Stream 1 (hand-labeled before/after): mine
+      `docs/research/slop_revision/round_02/researcher-plan_report.md`
+      and `docs/review/round_*/auditor_change_plan.md`.
+- [ ] Stream 2 (auto-extracted diffs): paragraph-level pairs from
+      `git diff essay_vN.md essay_v(N+1).md` for N=2..21, then
+      LLM-judge filter (keep only edits that actually reduce AI slop).
+- [ ] Stream 3 (negative examples): mine `.claude/worktrees/`
+      branches for proposed-but-rejected edits.
+- [ ] Stream 4 (banned-pattern catalog): union
+      `HumanEmbedding/docs/research/ai_writing_tells.md` with
+      `~/.copilot/skills/stop-slop/references/phrases.md`.
+- [ ] Merge + dedupe + assign 60/20/20 splits, write to
+      `data/stop_slop_split/{train,val,test}/items.json` and
+      `data/stop_slop_split/banned_patterns.json`.
+- [ ] Hand-back report to user: per-stream item count, sample 5
+      items, ask for sign-off before Phase 1 begins.
 
 ### Phase 1 — Backend (`COPILOT-1`)
-_Pending Phase 0 sign-off._
+_Pending Phase 0.5 sign-off._
+
+Default model for `copilot_cli_exec`: `claude-opus-4.7-1m-internal`
+(per user decision; documented in `dev_docs/decisions.md` as a
+fork-only default that must NOT be propagated upstream).
+Optimizer-side support: deferred to `COPILOT-2`.
+Outputs layout: per-skill subdir (`COPILOT-9` lands alongside).
 
 ### Phase 2 — First env (`COPILOT-3` stop_slop)
 _Pending Phase 1._

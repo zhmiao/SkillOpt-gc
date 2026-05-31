@@ -21,10 +21,55 @@ pick up.
 
 ---
 
+## 2026-05-31 — Copilot integration design proposal
+
+**Branch.** `chore/dev-docs-scaffold` (continued from earlier
+session today).
+**Commits.** _(commit SHA recorded after the design lands.)_
+
+**What landed.**
+- New `dev_docs/design/copilot_integration_plan.md`: full review of
+  the two coupled asks (add Copilot CLI as a SkillOpt backend +
+  expand SkillOpt to optimize complex copilot skills). Covers the
+  backend integration surface (file-by-file map of changes,
+  copilot CLI quirks, gotchas from existing exec backends, optimizer
+  vs target side, effort estimate) and a per-skill compatibility
+  matrix for every skill under `~/.copilot/skills/` (21 skills
+  classified A/B/C/D against the four SkillOpt requirements).
+- `dev_docs/ideas.md`: seeded `COPILOT-1..9` for the implementable
+  slices.
+- `dev_docs/plan.md`: filled in the **Active** section with the
+  copilot-integration phases.
+- `dev_docs/changelog.md`: SHA reference for the prior scaffold
+  commit corrected from the pre-amend value.
+
+No source code changes — this is read-only review + planning.
+
+**Decisions.** None landed this round. The plan defers all
+implementation-shape decisions to the user via the Open Questions
+block (`design/copilot_integration_plan.md § C.3`).
+
+**Lessons.** None.
+
+**Bugs.** None.
+
+**Ideas added.** `COPILOT-1` (target backend), `COPILOT-2`
+(optimizer backend, deferred), `COPILOT-3` (stop_slop env),
+`COPILOT-4` (ascii_align env), `COPILOT-5` (explain env, Tier B),
+`COPILOT-6` (test env, Tier B), `COPILOT-7` (code-review env,
+Tier B), `COPILOT-8` (Tier-C heavyweight bundle), `COPILOT-9`
+(outputs reorganization for skill experiments).
+
+**Open / deferred.** Waiting on user answers to the six Open
+Questions in `design/copilot_integration_plan.md § C.3` before
+starting `COPILOT-1`.
+
+---
+
 ## 2026-05-31 — dev_docs scaffold + repo sweep
 
 **Branch.** `chore/dev-docs-scaffold`
-**Commits.** `7070ce4 docs: scaffold dev_docs/ and AGENTS.md for fork-internal narrative`
+**Commits.** `0d3d0b1 docs: scaffold dev_docs/ and AGENTS.md for fork-internal narrative`
 
 **What landed.**
 - Created `dev_docs/` with the standard suite: `README.md`,

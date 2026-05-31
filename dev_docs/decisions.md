@@ -20,6 +20,74 @@
 
 ---
 
+## 2026-05-31 — `stop_slop` dataset source: `HumanEmbedding` repo
+
+**Context.** The first SkillOpt-optimized copilot skill is
+`stop-slop` (per user direction). It needs a labeled prose dataset.
+
+**Options considered.**
+1. Synthesize from public LLM outputs + reference rewrites
+   (turnkey but low signal).
+2. Hybrid: small real corpus + bulk synthetic.
+3. Mine `/home/miao/repos/HumanEmbedding` — the user's 8-week
+   essay revision history with full Claude Code audit/review trails.
+
+**Decision.** Option 3 (`HumanEmbedding`) with `dataset_option=max`:
+hand-labeled before/after + auto-extracted paragraph diffs +
+worktree-mined negative examples. Both banned-pattern sources unioned
+(`ai_writing_tells.md` + `stop-slop/references/phrases.md`).
+
+**Why.** The repo contains:
+- 20 essay versions (v2 → v22) with diffable revision history.
+- A `docs/research/slop_revision/round_02/researcher-plan_report.md`
+  with explicit, hand-curated (before, after, banned-pattern,
+  regression-check) entries — perfect SkillOpt training items.
+- 4 rounds of audit/reviewer reports under `docs/review/round_*/`
+  with `auditor_change_plan.md` per round.
+- `docs/research/ai_writing_tells.md` — the user's own catalog of
+  AI tells, directly usable as the hard-gate banned list.
+- 18MB of `.claude/worktrees/` — auditor/reviewer agent transcripts
+  including proposed-but-rejected edits (negative examples).
+
+This is human-labeled by the user, on the user's own writing, at
+section-level fidelity. Nothing synthetic comes close.
+
+**Trade-offs / costs.**
+- Extraction is 6–8 hours of mining (delegated to parallel agents).
+- The corpus is essay-domain prose — the resulting `stop_slop`
+  skill will be tuned for long-form analytical prose; less so for
+  e.g. PR descriptions or commit messages. Mitigated by including
+  the general `stop-slop/references/phrases.md` patterns in the
+  banned-list union.
+- `HumanEmbedding` is private; the extracted dataset under
+  `data/stop_slop_split/` is therefore also fork-private. Acceptable
+  since `SkillOpt-gc` itself is the user's personal fork.
+
+**Code refs.** `dev_docs/design/dataset_construction_plan.md`,
+`dev_docs/plan.md § Phase 0.5`.
+
+---
+
+## 2026-05-31 — Copilot integration first-slice parameters
+
+**Decisions captured from the Open Questions form in
+`design/copilot_integration_plan.md § C.3`.**
+
+| Question | Choice | Why |
+|---|---|---|
+| Default model for `copilot_cli_exec` | `claude-opus-4.7-1m-internal` | Matches what the user runs interactively. **Fork-only default — must NOT propagate upstream.** Add a guard in `dev_docs/rules.md`. |
+| Optimizer-side `copilot_cli_exec` (`COPILOT-2`) | Defer | Adds ~100 LOC + a serializer; not blocking. Revisit after `COPILOT-3` smoke. |
+| Tier-A first env | `stop_slop` | User picked over `ascii_align`. Higher real-world value (user's actual writing workflow). |
+| `stop_slop` dataset | `/home/miao/repos/HumanEmbedding` with `dataset_option=max` | See separate decision entry above. |
+| `ascii_align` dataset (when COPILOT-4 starts) | Pull from user's own repos | Real mis-aligned diagrams; high signal. |
+| Output directory layout | Per-skill subdir (`outputs/skills/<skill>/<run>/`) | Cleaner separation from benchmark runs. Lands with `COPILOT-9` alongside `COPILOT-1`. |
+
+**Code refs.** `dev_docs/plan.md § Phase 0.5..Phase 2`,
+`dev_docs/design/copilot_integration_plan.md`,
+`dev_docs/design/dataset_construction_plan.md`.
+
+---
+
 ## 2026-05-31 — Internal dev docs live under `dev_docs/`, not `docs/`
 
 **Context.** `docs/` is the public mkdocs site that publishes to
