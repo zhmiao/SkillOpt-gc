@@ -1,0 +1,912 @@
+{
+  "version": "1",
+  "generated_at": "2026-05-31T18:37:48+00:00",
+  "patterns": [
+    {
+      "id": "em_dash_overuse",
+      "display_name": "Em-dash rhythmic filler / overuse",
+      "description": "Detects em dashes used as default connective rhythm rather than necessary punctuation. Trace: ai_writing_tells.md:11-15 flags frequency and multiple em dashes as the giveaway; structures.md:124-125 supports using commas or periods instead.",
+      "matcher": {
+        "type": "regex",
+        "regex": "—.{0,200}—",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "Theorists and practitioners — as patient as they can be — still talk past each other.",
+          "source": "ai_writing_tells"
+        },
+        {
+          "text": "Speed, quality, cost—pick two.",
+          "source": "examples"
+        }
+      ],
+      "source": "ai_writing_tells",
+      "severity": "medium"
+    },
+    {
+      "id": "not_x_but_y_reveal",
+      "display_name": "Not X, but Y reveal",
+      "description": "Formula that creates a shallow reversal by negating a vague setup before revealing the intended claim. Trace: ai_writing_tells.md:17-21 calls it a top tell; structures.md:3-21 lists related binary contrasts.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\b(?:it(?:'s| is)\\s+)?not\\s+(?:just\\s+|merely\\s+|only\\s+|about\\s+)?[^.;:\\n]{1,120}?\\s+(?:but\\s+|,\\s*it(?:'s| is)\\s+|it(?:'s| is)\\s+)[^.;:\\n]{1,120}",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "It's not about writing faster, it's about writing smarter.",
+          "source": "ai_writing_tells"
+        },
+        {
+          "text": "Not because the technology is complex. Because people are complex.",
+          "source": "examples"
+        }
+      ],
+      "source": "ai_writing_tells",
+      "severity": "high"
+    },
+    {
+      "id": "rule_of_three",
+      "display_name": "Rule of three / triadic list",
+      "description": "Three polished items, often near-synonyms, used to imply completeness. Trace: ai_writing_tells.md:23-27 flags corporate tricolons; structures.md:118-125 also warns against three-item lists.",
+      "matcher": {
+        "type": "regex",
+        "regex": "\\b[\\w-]+(?:\\s+[\\w-]+){0,3},\\s+[\\w-]+(?:\\s+[\\w-]+){0,3},\\s+(?:and|or\\s+)?[\\w-]+(?:\\s+[\\w-]+){0,3}\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "Clear, concise, compelling.",
+          "source": "ai_writing_tells"
+        },
+        {
+          "text": "Speed. Quality. Cost.",
+          "source": "examples"
+        }
+      ],
+      "source": "ai_writing_tells",
+      "severity": "low"
+    },
+    {
+      "id": "negative_listing_reveal",
+      "display_name": "Negative listing before reveal",
+      "description": "Repeated negated fragments build dramatic runway before a generic positive reveal. Trace: ai_writing_tells.md:29-32 names the 'Not A. Not B. Not C. But D.' cadence; structures.md:23-32 calls this negative listing.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?is)\\b(?:Not|It\\s+wasn['’]t)\\s+[^.?!]{1,50}[.?!]\\s+(?:Not|It\\s+wasn['’]t)\\s+[^.?!]{1,50}[.?!](?:\\s+(?:Not|It\\s+wasn['’]t)\\s+[^.?!]{1,50}[.?!])?\\s+(?:But\\s+|It\\s+was\\s+|A\\s+)[^.?!]{1,80}",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "Not speed. Not scale. Not automation. But transformation.",
+          "source": "ai_writing_tells"
+        },
+        {
+          "text": "It wasn't speed. It wasn't scale. It was trust.",
+          "source": "structures"
+        }
+      ],
+      "source": "ai_writing_tells",
+      "severity": "high"
+    },
+    {
+      "id": "ai_vocabulary_cluster",
+      "display_name": "AI vocabulary cluster",
+      "description": "Dense co-occurrence of favored abstract words such as delve, tapestry, nuanced, pivotal, crucial, intricate, underscore, and testament. Trace: ai_writing_tells.md:34-38 says three or more cluster members in one paragraph are the giveaway.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?is)\\b(?:delve|tapestry|landscape|navigate|foster|leverage|robust|nuanced|pivotal|crucial|intricate|underscore|testament)\\b(?:[\\s\\S]{0,160}\\b(?:delve|tapestry|landscape|navigate|foster|leverage|robust|nuanced|pivotal|crucial|intricate|underscore|testament)\\b){2,}",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "This pivotal shift underscores the intricate tapestry of the evolving landscape.",
+          "source": "ai_writing_tells"
+        }
+      ],
+      "source": "ai_writing_tells",
+      "severity": "high"
+    },
+    {
+      "id": "importance_inflation",
+      "display_name": "Importance inflation / significance stuffing",
+      "description": "Stock language asserts significance without proving it. Trace: ai_writing_tells.md:40-43 lists testament, pivotal moment, indelible mark, and setting the stage; phrases.md:118-128 lists vague claims about implications, stakes, and consequences.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\b(?:stands?\\s+as\\s+a\\s+testament\\s+to|marks?\\s+a\\s+pivotal\\s+moment|indelible\\s+mark|setting\\s+the\\s+stage\\s+for|the\\s+implications\\s+are\\s+significant|the\\s+stakes\\s+are\\s+high|the\\s+consequences\\s+are\\s+real)\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "Stands as a testament to the evolving landscape of innovation.",
+          "source": "ai_writing_tells"
+        },
+        {
+          "text": "The implications are significant.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "both",
+      "severity": "high"
+    },
+    {
+      "id": "geographic_diversity_stuffing",
+      "display_name": "Geographic diversity stuffing",
+      "description": "Decorative lists of global cities create a false sense of authority or balance. Trace: ai_writing_tells.md:45-49 cites Tokyo, Nairobi, and São Paulo syndrome.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?is)\\bfrom\\s+[^.?!]{0,120}\\b(?:Tokyo|Nairobi|S[aã]o\\s+Paulo|Beijing|São\\s+Paulo)\\b[^.?!]{0,220}\\b(?:Tokyo|Nairobi|S[aã]o\\s+Paulo|Beijing|São\\s+Paulo)\\b[^.?!]{0,220}\\b(?:Tokyo|Nairobi|S[aã]o\\s+Paulo|Beijing|São\\s+Paulo)\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "From the boardrooms of Tokyo to the startups of Nairobi to the factories of São Paulo.",
+          "source": "ai_writing_tells"
+        }
+      ],
+      "source": "ai_writing_tells",
+      "severity": "medium"
+    },
+    {
+      "id": "pseudo_profound_fragments",
+      "display_name": "Pseudo-profound fragments",
+      "description": "Short isolated fragments perform literary depth without adding argument. Trace: ai_writing_tells.md:51-54 gives 'And yet.' and 'What remains.'; structures.md:34-44 lists dramatic fragmentation.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?im)(?:^|[.!?]\\s+)(?:And\\s+yet|What\\s+remains|Something\\s+closer|That['’]s\\s+it|That['’]s\\s+the\\s+\\w+)\\.",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "And yet. What remains is not the data, but something older.",
+          "source": "ai_writing_tells"
+        },
+        {
+          "text": "That's it. That's the tradeoff.",
+          "source": "examples"
+        }
+      ],
+      "source": "ai_writing_tells",
+      "severity": "medium"
+    },
+    {
+      "id": "something_older_closer_formula",
+      "display_name": "Something older than X, something closer to Y",
+      "description": "Balanced abstraction formula that supplies cadence where a concrete claim should be. Trace: ai_writing_tells.md:56-60 names the exact 'Something older than X, something closer to Y' construction.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\bsomething\\s+older\\s+than\\s+[^,.;!?]{1,80},\\s+something\\s+closer\\s+to\\s+[^,.;!?]{1,80}",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "Something older than language, something closer to breath.",
+          "source": "ai_writing_tells"
+        }
+      ],
+      "source": "ai_writing_tells",
+      "severity": "high"
+    },
+    {
+      "id": "word_choice_meta_commentary",
+      "display_name": "Meta-commentary on word choice",
+      "description": "The prose narrates why it chose a word instead of letting the word work in context. Trace: ai_writing_tells.md:62-66 gives 'I use X deliberately' and related self-glossing.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\b(?:I\\s+use\\s+(?:(?:the\\s+)?(?:word|term)\\s+)?['\\\"“”]?[^'\\\"“”.,;:]{1,60}['\\\"“”]?\\s+(?:here\\s+)?deliberately|the\\s+word\\s+I\\s+want\\s+is\\s+not\\s+['\\\"“”]?[^'\\\"“”.,;:]+['\\\"“”]?\\s+but\\s+['\\\"“”]?[^'\\\"“”.,;:]+)",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "I use the word 'witness' deliberately.",
+          "source": "ai_writing_tells"
+        }
+      ],
+      "source": "ai_writing_tells",
+      "severity": "medium"
+    },
+    {
+      "id": "heres_family_opener",
+      "display_name": "Here's-family throat-clearing opener",
+      "description": "Openers beginning with 'Here's...' preview the point instead of making it. Trace: ai_writing_tells.md:68-72 flags announcer phrases; phrases.md:7-23 lists here's-the-thing / here's-what / here's-why variants.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)(?:^|[.!?]\\s+)(?:But\\s+)?Here['’]s\\s+(?:the\\s+thing|what\\s+[^.!?:\\n]{1,80}|this\\s+[^.!?:\\n]{1,80}|that\\s+[^.!?:\\n]{1,80}|why\\s+[^.!?:\\n]{1,80}|the\\s+problem\\s+though|what\\s+I\\s+find\\s+interesting)",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "Here's the thing: building products is hard.",
+          "source": "stop_slop_phrases"
+        },
+        {
+          "text": "But here's the truth.",
+          "source": "ai_writing_tells"
+        }
+      ],
+      "source": "both",
+      "severity": "high"
+    },
+    {
+      "id": "truth_reality_opener",
+      "display_name": "Truth / reality throat-clearing opener",
+      "description": "Announces truth or reality before the claim. Trace: ai_writing_tells.md:68-72 lists truth-style announcers; phrases.md:12-16 and 83 list 'The uncomfortable truth is', 'The truth is', and 'The reality is'.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\b(?:the\\s+uncomfortable\\s+truth\\s+is|the\\s+truth\\s+is,?|the\\s+reality\\s+is|the\\s+real\\s+[^.!?:\\n]{1,50}\\s+is)\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "The uncomfortable truth is that nobody wants to admit they're confused.",
+          "source": "stop_slop_phrases"
+        },
+        {
+          "text": "The truth is, the argument needs evidence.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "both",
+      "severity": "high"
+    },
+    {
+      "id": "clarity_honesty_opener",
+      "display_name": "Let-me-be-clear / honesty opener",
+      "description": "Performs candor before stating the point. Trace: phrases.md:15-18 lists 'Let me be clear', 'I'll say it again', and 'I'm going to be honest' under throat-clearing openers.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\b(?:let\\s+me\\s+be\\s+clear|I['’]ll\\s+say\\s+it\\s+again|I['’]m\\s+going\\s+to\\s+be\\s+honest)\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "Let me be clear: this has to change.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "medium"
+    },
+    {
+      "id": "it_turns_out_opener",
+      "display_name": "It turns out opener",
+      "description": "Uses a discovery frame where direct statement would be cleaner. Trace: phrases.md:12-13 lists 'It turns out' as a throat-clearing opener.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\bit\\s+turns\\s+out\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "It turns out that most teams struggle with alignment.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "medium"
+    },
+    {
+      "id": "can_we_talk_about_opener",
+      "display_name": "Can we talk about opener",
+      "description": "Conversational prompt used as runway before the point. Trace: phrases.md:19 lists 'Can we talk about' among throat-clearing openers.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\bcan\\s+we\\s+talk\\s+about\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "Can we talk about why this keeps happening?",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "medium"
+    },
+    {
+      "id": "overused_transitions",
+      "display_name": "Overused formal transitions",
+      "description": "Default connective tissue such as Moreover, Furthermore, Additionally, and Notably. Trace: ai_writing_tells.md:74-77 flags these as AI connective defaults.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?im)(?:^|[.!?]\\s+)(?:Moreover|Furthermore|Additionally|Notably),?\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "Moreover, the findings suggest a broader trend.",
+          "source": "ai_writing_tells"
+        }
+      ],
+      "source": "ai_writing_tells",
+      "severity": "medium"
+    },
+    {
+      "id": "outline_like_conclusion",
+      "display_name": "Outline-like recap conclusion",
+      "description": "Conclusion starts with a school-essay connective and recaps instead of adding a final turn. Trace: ai_writing_tells.md:79-82 lists 'In summary', 'Overall', and 'In conclusion'.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?im)(?:^|[.!?]\\s+)(?:In\\s+summary|Overall|In\\s+conclusion),?\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "In conclusion, we have seen that the system matters.",
+          "source": "ai_writing_tells"
+        }
+      ],
+      "source": "ai_writing_tells",
+      "severity": "high"
+    },
+    {
+      "id": "abstract_example_moral_sandwich",
+      "display_name": "Abstract → example → moral sandwich",
+      "description": "Paragraph shape: abstract claim, tidy example, then a moral that restates the claim. Trace: ai_writing_tells.md:84-87 says the symmetry is too neat and examples are framed and closed.",
+      "matcher": {
+        "type": "llm_judge",
+        "regex": null,
+        "llm_prompt": "Does the passage follow a tidy abstract claim → short concrete example → abstract moral/restatement structure? Return yes only when the symmetry is the main rhetorical move."
+      },
+      "examples": [
+        {
+          "text": "Topic claim. For example, a neat two-sentence case. Therefore, the topic claim is true.",
+          "source": "ai_writing_tells"
+        }
+      ],
+      "source": "ai_writing_tells",
+      "severity": "medium"
+    },
+    {
+      "id": "elegant_variation_epithets",
+      "display_name": "Elegant variation / repeated epithets",
+      "description": "Avoids clear repetition by swapping names for ornate role labels. Trace: ai_writing_tells.md:89-93 gives Dickens → the novelist → the Victorian author → the celebrated writer.",
+      "matcher": {
+        "type": "llm_judge",
+        "regex": null,
+        "llm_prompt": "Does the passage refer to the same person or object through multiple unnecessary epithets instead of repeating the name or using a pronoun? Return yes when synonym-swapping reduces clarity."
+      },
+      "examples": [
+        {
+          "text": "Dickens wrote the scene. The novelist then sharpened it. The Victorian author later revised it.",
+          "source": "ai_writing_tells"
+        }
+      ],
+      "source": "ai_writing_tells",
+      "severity": "medium"
+    },
+    {
+      "id": "hedge_stack",
+      "display_name": "Hedge stack",
+      "description": "Multiple uncertainty words pile up in one claim. Trace: ai_writing_tells.md:95-99 names might/could/potentially/often/generally; phrases.md:53-56 also bans softeners and hedges.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\b(?:could|might|may|potentially|often|generally|tend(?:s|ed)?\\s+to|seem(?:s|ed)?\\s+to)\\b(?:[^.?!]{0,80}\\b(?:could|might|may|potentially|often|generally|tend(?:s|ed)?\\s+to|seem(?:s|ed)?\\s+to)\\b){1,}",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "This could potentially suggest that X might generally tend to happen.",
+          "source": "ai_writing_tells"
+        }
+      ],
+      "source": "both",
+      "severity": "medium"
+    },
+    {
+      "id": "forced_sass_cadence",
+      "display_name": "Forced sass / contrarian cadence",
+      "description": "Mimics punchy social-media confidence with phrases such as Hot take or The result? Trace: ai_writing_tells.md:100-103 names this cadence; phrases.md:89-92 lists Hint, Plot twist, and Spoiler under meta-commentary.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)(?:^|[.!?]\\s+)(?:Hot\\s+take|But\\s+here['’]s\\s+what\\s+nobody['’]s\\s+telling\\s+you|The\\s+result\\?|Hint:|Plot\\s+twist:|Spoiler:)",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "Hot take: the result was predictable.",
+          "source": "ai_writing_tells"
+        },
+        {
+          "text": "Plot twist: they were optimizing the wrong thing.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "both",
+      "severity": "medium"
+    },
+    {
+      "id": "unearned_spiritual_register",
+      "display_name": "Unearned spiritual register",
+      "description": "Spiritual or reverent vocabulary appears without an earned emotional context. Trace: ai_writing_tells.md:105-109 lists sacred, witness, reverence, soul, testimony.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\b(?:sacred|witness|reverence|reverent|the\\s+soul\\s+of|testimony)\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "This is not data. It is testimony. It is witness.",
+          "source": "ai_writing_tells"
+        }
+      ],
+      "source": "ai_writing_tells",
+      "severity": "medium"
+    },
+    {
+      "id": "unvaried_sentence_rhythm",
+      "display_name": "Perfect rhythm / unvaried sentence length",
+      "description": "Smooth sentence lengths repeat without arrhythmia, fragments, runs, or rough edges. Trace: ai_writing_tells.md:111-114 flags every sentence landing around 12-18 words.",
+      "matcher": {
+        "type": "llm_judge",
+        "regex": null,
+        "llm_prompt": "Does the passage have unnaturally even sentence lengths and smooth rhythm, with little variation, roughness, fragments, or long/short contrast? Return yes only for sustained rhythm."
+      },
+      "examples": [
+        {
+          "text": "Every sentence lands in the same band. Each clause arrives with balanced rhythm. Nothing breaks the polished surface.",
+          "source": "ai_writing_tells"
+        }
+      ],
+      "source": "ai_writing_tells",
+      "severity": "medium"
+    },
+    {
+      "id": "signposting_without_payoff",
+      "display_name": "Signposting that announces instead of delivering",
+      "description": "Flags a takeaway, important part, or plot twist, then offers a generic sentence. Trace: ai_writing_tells.md:116-119 names this; phrases.md:31-34 and 93-99 list related signposts.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\b(?:here\\s+is\\s+the\\s+key\\s+takeaway|the\\s+important\\s+part\\s+is\\s+this|now\\s+for\\s+the\\s+plot\\s+twist|here['’]s\\s+why\\s+that\\s+matters|the\\s+rest\\s+of\\s+this\\s+essay\\s+explains|let\\s+me\\s+walk\\s+you\\s+through|as\\s+we['’]ll\\s+see)\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "Here is the key takeaway: the system needs to improve.",
+          "source": "ai_writing_tells"
+        },
+        {
+          "text": "Let me walk you through the problem.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "both",
+      "severity": "high"
+    },
+    {
+      "id": "compound_density_cluster",
+      "display_name": "Compound co-occurrence density",
+      "description": "Several otherwise weak tells appear in the same paragraph with smooth tone. Trace: ai_writing_tells.md:5 and 123-126 says four to six tells in one paragraph are the strongest signal.",
+      "matcher": {
+        "type": "llm_judge",
+        "regex": null,
+        "llm_prompt": "Does one paragraph contain four or more catalogued AI-writing tells together, especially with smooth unbroken tone? Count density, not any single phrase."
+      },
+      "examples": [
+        {
+          "text": "One em dash, one nuanced, one not X but Y is nothing; four to six in one paragraph is the tell.",
+          "source": "ai_writing_tells"
+        }
+      ],
+      "source": "ai_writing_tells",
+      "severity": "high"
+    },
+    {
+      "id": "full_stop_period_emphasis",
+      "display_name": "Full stop / period emphasis crutch",
+      "description": "Adds performative finality without evidence. Trace: phrases.md:25-33 lists 'Full stop.' and 'Period.' as removable emphasis crutches.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)(?:^|[.!?]\\s+)(?:Full\\s+stop|Period)\\.",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "This is the only path. Full stop.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "medium"
+    },
+    {
+      "id": "let_that_sink_in",
+      "display_name": "Let that sink in",
+      "description": "Tells the reader to feel weight instead of making the sentence carry it. Trace: phrases.md:29-33 lists 'Let that sink in.' as an emphasis crutch.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\blet\\s+that\\s+sink\\s+in\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "The team shipped nothing for a year. Let that sink in.",
+          "source": "stop_slop_phrases"
+        },
+        {
+          "text": "Let that sink in.",
+          "source": "examples"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "high"
+    },
+    {
+      "id": "make_no_mistake",
+      "display_name": "Make no mistake",
+      "description": "Manufactured certainty before a claim. Trace: phrases.md:29-34 lists 'Make no mistake' as an emphasis crutch.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\bmake\\s+no\\s+mistake\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "Make no mistake, this changes the market.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "medium"
+    },
+    {
+      "id": "this_matters_because",
+      "display_name": "This matters because",
+      "description": "Announces importance instead of demonstrating it. Trace: phrases.md:29-34 lists 'This matters because' and 'Here's why that matters' as emphasis crutches.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\b(?:this\\s+matters\\s+because|here['’]s\\s+why\\s+that\\s+matters)\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "This matters because your competition isn't waiting.",
+          "source": "stop_slop_phrases"
+        },
+        {
+          "text": "Here's why that matters: the budget is gone.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "medium"
+    },
+    {
+      "id": "business_jargon_navigate_landscape",
+      "display_name": "Navigate / landscape jargon",
+      "description": "Business abstractions use travel or terrain metaphors where plain verbs would work. Trace: ai_writing_tells.md:34-38 includes navigate and landscape in the AI vocabulary cluster; phrases.md:35-52 lists Navigate and Landscape as business jargon.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\b(?:navigate(?:\\s+\\w+){0,3}|landscape)\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "Navigate uncertainty across the evolving landscape.",
+          "source": "stop_slop_phrases"
+        },
+        {
+          "text": "This pivotal shift reshapes the evolving landscape.",
+          "source": "ai_writing_tells"
+        }
+      ],
+      "source": "both",
+      "severity": "medium"
+    },
+    {
+      "id": "business_jargon_action_cliches",
+      "display_name": "Business action cliché cluster",
+      "description": "Stock workplace verbs replace concrete action. Trace: phrases.md:35-52 lists unpack, lean into, game-changer, double down, deep dive, take a step back, moving forward, circle back, and on the same page.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\b(?:unpack|lean\\s+into|game[-\\s]?changer|double\\s+down|deep\\s+dive|take\\s+a\\s+step\\s+back|moving\\s+forward|circle\\s+back|on\\s+the\\s+same\\s+page)\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "We need to lean into discomfort and circle back moving forward.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "medium"
+    },
+    {
+      "id": "adverb_softener_intensifier",
+      "display_name": "Adverb softener / intensifier filler",
+      "description": "Empty -ly adverbs and common softeners inflate tone without adding information. Trace: phrases.md:53-75 says kill adverbs and lists really, just, literally, genuinely, honestly, simply, actually, deeply, truly, fundamentally, inherently, inevitably, interestingly, importantly, and crucially.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\b(?:really|just|literally|genuinely|honestly|simply|actually|deeply|truly|fundamentally|inherently|inevitably|interestingly|importantly|crucially|\\w+ly)\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "This is genuinely hard and actually matters.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "low"
+    },
+    {
+      "id": "at_its_core_filler",
+      "display_name": "At its core filler",
+      "description": "A preamble that signals essence before stating the claim. Trace: phrases.md:75-84 lists 'At its core' among filler phrases.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\bat\\s+its\\s+core\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "At its core, this is a coordination problem.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "medium"
+    },
+    {
+      "id": "worth_noting_filler",
+      "display_name": "It's worth noting filler",
+      "description": "Prefaces a sentence with needless permission to notice it. Trace: phrases.md:75-84 lists 'It's worth noting' as filler.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\bit['’]?s\\s+worth\\s+noting\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "It's worth noting that the model still failed.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "medium"
+    },
+    {
+      "id": "end_of_day_filler",
+      "display_name": "At the end of the day filler",
+      "description": "Conversational summary preamble that adds no content. Trace: phrases.md:75-84 lists 'At the end of the day' as filler.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\bat\\s+the\\s+end\\s+of\\s+the\\s+day\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "At the end of the day, the numbers decide.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "medium"
+    },
+    {
+      "id": "when_it_comes_to_filler",
+      "display_name": "When it comes to filler",
+      "description": "Topic preamble before the actual subject. Trace: phrases.md:75-84 lists 'When it comes to' as filler.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\bwhen\\s+it\\s+comes\\s+to\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "When it comes to evaluation, consistency matters.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "medium"
+    },
+    {
+      "id": "in_world_today_opener",
+      "display_name": "In today's / in a world where opener",
+      "description": "Generic present-age opener that delays the specific claim. Trace: ai_writing_tells.md:68-72 names 'In today's fast-paced digital landscape'; phrases.md:78 and 82 list 'In today's [X]' and 'In a world where'.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\b(?:in\\s+today['’]?s\\s+[^,.!?;:]{1,80}|in\\s+a\\s+world\\s+where\\s+[^,.!?;:]{1,120})",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "In today's fast-paced digital landscape, clarity matters.",
+          "source": "ai_writing_tells"
+        },
+        {
+          "text": "In a world where teams move fast, process breaks.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "both",
+      "severity": "high"
+    },
+    {
+      "id": "self_referential_structure_meta",
+      "display_name": "Self-referential structure meta-commentary",
+      "description": "The essay announces its own sections or path rather than moving through the argument. Trace: phrases.md:85-100 lists 'The rest of this essay explains', 'Let me walk you through', 'In this section', 'As we'll see', and 'I want to explore'.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\b(?:the\\s+rest\\s+of\\s+this\\s+essay\\s+explains|let\\s+me\\s+walk\\s+you\\s+through|in\\s+this\\s+section,?\\s+we['’]ll|as\\s+we['’]ll\\s+see|I\\s+want\\s+to\\s+explore)\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "The rest of this essay explains why the system breaks.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "medium"
+    },
+    {
+      "id": "feature_not_bug_cliche",
+      "display_name": "Feature, not a bug cliché",
+      "description": "Imported software cliché used as a rhetorical shortcut. Trace: phrases.md:89-95 lists 'X is a feature, not a bug' under meta-commentary.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\b(?:is|was|are|were)\\s+a\\s+feature,?\\s+not\\s+a\\s+bug\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "This is a feature, not a bug.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "medium"
+    },
+    {
+      "id": "dressed_up_as_cliche",
+      "display_name": "Dressed up as cliché",
+      "description": "Uses 'dressed up as' to create an easy reveal instead of explaining the relation. Trace: phrases.md:89-95 lists 'Dressed up as' under meta-commentary.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\bdressed\\s+up\\s+as\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "The plan is delay dressed up as strategy.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "medium"
+    },
+    {
+      "id": "performative_promise",
+      "display_name": "Performative promise",
+      "description": "False intimacy or manufactured sincerity through 'I promise'. Trace: phrases.md:101-108 lists 'I promise' and 'They exist, I promise'.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\bI\\s+promise\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "They exist, I promise.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "medium"
+    },
+    {
+      "id": "creeps_in_personification",
+      "display_name": "Creeps in personification",
+      "description": "Manufactured intimacy that treats an abstraction as sneaking into the scene. Trace: phrases.md:101-106 lists 'creeps in' under performative emphasis.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\bcreeps\\s+in\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "Doubt creeps in before the launch.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "low"
+    },
+    {
+      "id": "telling_difficulty_instead_of_showing",
+      "display_name": "Telling difficulty instead of showing it",
+      "description": "Announces that something is hard or what it looks like instead of demonstrating the constraint. Trace: phrases.md:109-117 lists 'This is genuinely hard', 'This is what leadership actually looks like', and 'This is what X actually looks like'.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\b(?:this\\s+is\\s+genuinely\\s+hard|this\\s+is\\s+what\\s+[^.?!]{1,60}\\s+actually\\s+looks\\s+like)\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "This is what leadership actually looks like.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "medium"
+    },
+    {
+      "id": "actually_matters_formula",
+      "display_name": "Actually matters formula",
+      "description": "Adds actually to inflate importance instead of naming the consequence. Trace: phrases.md:113-117 lists 'actually matters' under telling instead of showing.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\bactually\\s+matters\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "This is the part that actually matters.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "medium"
+    },
+    {
+      "id": "vague_declarative_importance",
+      "display_name": "Vague declarative importance claim",
+      "description": "Declares structural depth, stakes, or consequences without naming the mechanism. Trace: phrases.md:118-128 lists reasons are structural, implications are significant, deepest problem, stakes are high, and consequences are real.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\b(?:the\\s+reasons\\s+are\\s+structural|the\\s+implications\\s+are\\s+significant|this\\s+is\\s+the\\s+deepest\\s+problem|the\\s+stakes\\s+are\\s+high|the\\s+consequences\\s+are\\s+real)\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "The reasons are structural.",
+          "source": "stop_slop_phrases"
+        },
+        {
+          "text": "The stakes are high.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "high"
+    },
+    {
+      "id": "you_already_know_this_but",
+      "display_name": "You already know this, but",
+      "description": "False intimacy that presumes agreement before making the claim. Trace: phrases.md:89-93 lists 'You already know this, but' under meta-commentary.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\byou\\s+already\\s+know\\s+this,?\\s+but\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "You already know this, but the process is broken.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "medium"
+    },
+    {
+      "id": "another_post_aside",
+      "display_name": "But that's another post aside",
+      "description": "Self-aware aside that gestures at an omitted argument instead of handling it. Trace: phrases.md:89-94 lists 'But that's another post' under meta-commentary.",
+      "matcher": {
+        "type": "regex",
+        "regex": "(?i)\\bbut\\s+that['’]s\\s+another\\s+post\\b",
+        "llm_prompt": null
+      },
+      "examples": [
+        {
+          "text": "The incentive problem is worse, but that's another post.",
+          "source": "stop_slop_phrases"
+        }
+      ],
+      "source": "stop_slop_phrases",
+      "severity": "low"
+    }
+  ]
+}
