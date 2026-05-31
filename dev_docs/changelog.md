@@ -24,7 +24,7 @@ pick up.
 ## 2026-05-31 — dev_docs scaffold + repo sweep
 
 **Branch.** `chore/dev-docs-scaffold`
-**Commits.** _(commit SHA will be recorded after the scaffold lands)_
+**Commits.** `7070ce4 docs: scaffold dev_docs/ and AGENTS.md for fork-internal narrative`
 
 **What landed.**
 - Created `dev_docs/` with the standard suite: `README.md`,
