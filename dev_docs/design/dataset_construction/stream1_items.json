@@ -1,0 +1,1921 @@
+[
+  {
+    "id": "stream1_slop_revision_r02_tier1_l88_delete",
+    "prose_in": "I use 'logic' here deliberately, and I mean it broadly.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "meta_commentary",
+        "evidence": "Reason: Pure meta-commentary; redundant with line 70 definition paragraph."
+      }
+    ],
+    "gold_rewrite": "",
+    "regression_check": "Delete; content loss ≈ 0 per Tier 1. No replacement.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:36-39",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier1_l102_delete",
+    "prose_in": "This is what I mean when I say LLMs distill human logic.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "meta_commentary",
+        "evidence": "Reason: Third meta-commentary instance; move straight to content."
+      }
+    ],
+    "gold_rewrite": "",
+    "regression_check": "Delete; content loss ≈ 0 per Tier 1. No replacement.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:38-40",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier1_all_of_it_delete",
+    "prose_in": "All of it.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "anaphoric_sweep",
+        "evidence": "Reason: four repeated \"All of it.\" sentences; keep one only."
+      }
+    ],
+    "gold_rewrite": "",
+    "regression_check": "Delete three of four instances; keep one in Movement III only.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:40-40",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier1_l134_qa_delete",
+    "prose_in": "Can we go further? Can the crystal be refined beyond the limitations of its source material?",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "q_and_a_pair",
+        "evidence": "Reason: Q&A pair is a chat-trained tell."
+      }
+    ],
+    "gold_rewrite": "",
+    "regression_check": "Tier 1 says delete the Q&A pair; source suggests a later declarative replacement.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:41-41",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier1_l138_qa_staircase_delete",
+    "prose_in": "Better at what? At achieving a reward signal. How to get there? No prescribed path. No human-designed strategy.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "q_and_a_pair",
+        "evidence": "Reason: Q&A + staircase; collapse in Tier 2."
+      },
+      {
+        "pattern_id": "staircase",
+        "evidence": "Short fragment staircase after Q&A."
+      }
+    ],
+    "gold_rewrite": "",
+    "regression_check": "Delete/collapse Q&A staircase before Tier 2 rewrite.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:42-42",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier2_line7",
+    "prose_in": "Biologists and engineers, ecologists and data scientists, theorists and practitioners — as patient and enthusiastic as they can be — and yet the words they carry across the table keep arriving wrong, keep meaning something else on the other side.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "paired_item_triplet",
+        "evidence": "Checks: dropped the three paired-item triplet to a single pair + modifier clause."
+      },
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Before contains two em-dash interruptions."
+      },
+      {
+        "pattern_id": "and_yet_pivot",
+        "evidence": "Before uses \"and yet\" rhetorical pivot."
+      }
+    ],
+    "gold_rewrite": "Biologists and engineers, patient with each other and fluent in each other's papers, and the words still keep arriving wrong on the far side of the table.",
+    "regression_check": "No different AI shape; preserves structural mistranslation claim; more specific pair grounded in author work.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:53-57",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier2_line9",
+    "prose_in": "Underneath all of this, I have come to suspect, there is a structure that does not depend on any of our languages. Something older than vocabulary, something closer to the bones of thought itself — the shape of how we reason, prior to the words we happen to reason in.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "something_x_opener",
+        "evidence": "Checks: no \"Something X\" opener in rewrite."
+      },
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Before uses em-dash for thesis turn."
+      },
+      {
+        "pattern_id": "skeleton_metaphor",
+        "evidence": "Checks: drops skeleton/bones metaphor."
+      }
+    ],
+    "gold_rewrite": "I have come to suspect there is a structure underneath, older than any vocabulary — the shape of how we reason before the words we reason in.",
+    "regression_check": "One em-dash, no triplet, no Something-X opener; keeps claim; drops skeleton metaphor.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:59-63",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier2_line58",
+    "prose_in": "A programmer in Beijing, a programmer in Nairobi, a programmer in São Paulo — all read this code and understand the same thing. No translation needed. No cultural context required.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "geographic_triplet",
+        "evidence": "Checks: pair instead of geographic triplet."
+      },
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Before uses em-dash to pivot from triplet."
+      }
+    ],
+    "gold_rewrite": "A programmer in Beijing and one in Nairobi read this code the same way. No translation step; no footnotes.",
+    "regression_check": "Pair instead of geographic triplet; claim intact; fewer archetypes.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:65-69",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier2_line74",
+    "prose_in": "capable of describing not only logical inference but any computable process — a web server, a simulation of the atmosphere, a system that plays chess.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "not_only_x_but_y",
+        "evidence": "Checks: \"not only X but Y\" dropped."
+      },
+      {
+        "pattern_id": "triplet",
+        "evidence": "Checks: triplet dropped."
+      },
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Before uses em-dash before examples."
+      }
+    ],
+    "gold_rewrite": "capable of describing any computable process, from web servers to weather simulations.",
+    "regression_check": "Claim intact; less performatively exotic.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:71-75",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier2_line90",
+    "prose_in": "What the training process does is not memorization — it is compression.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "not_x_it_is_y_inversion",
+        "evidence": "Checks: \"not X — it is Y\" inversion replaced."
+      },
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Before uses em-dash for contrast."
+      }
+    ],
+    "gold_rewrite": "Training isn't memorization. It's compression.",
+    "regression_check": "Still a contrast, but cadenced as two short declaratives rather than one rhetorical swing.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:77-81",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier2_line96",
+    "prose_in": "These are not technical failures. They are human tendencies, faithfully compressed into the model.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "ai_adverb",
+        "evidence": "Checks: \"faithfully\" is an AI-adverb."
+      }
+    ],
+    "gold_rewrite": "These are not engineering failures. They are human tendencies, compressed into the model.",
+    "regression_check": "Claim intact; one less AI-register word.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:83-87",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier2_line100",
+    "prose_in": "And yet — what remains, after the surface of language is compressed away, after the cultural specifics fade into statistical patterns, after the noise of a trillion individual voices is reduced to geometric structure — is something remarkable. It is the purified, crystallized form of human logic. Impure, because we are impure. Flawed, because we are flawed. But structured, because underneath the noise, we reason.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Checks: one em-dash gone."
+      },
+      {
+        "pattern_id": "anaphoric_triplet",
+        "evidence": "Checks: anaphoric triplet reduced to noun-phrase asyndeton."
+      },
+      {
+        "pattern_id": "balanced_cadence",
+        "evidence": "Checks: BAL cadence broken by colon."
+      }
+    ],
+    "gold_rewrite": "Compression strips the surface of language, the cultural specifics, the grain of individual voice. What is left is structure. Impure, because we are. But structured: we reason, we get from A to B.",
+    "regression_check": "Does not add a new AI shape; preserves structure/crystal claim without purified-crystal phrasing.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:89-93",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier2_line102",
+    "prose_in": "Not that they produce truth. Not that they are intelligent. But that the process of compressing all of human expression into a common geometric space extracts the skeleton of how we collectively think — and that skeleton, for all its imperfections, is the closest thing we have to a shared logical foundation.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "not_x_not_y_but_z",
+        "evidence": "Checks: drops \"Not X. Not Y. But Z.\" inversion."
+      },
+      {
+        "pattern_id": "skeleton_metaphor",
+        "evidence": "Checks: replaces skeleton with structure."
+      },
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Before uses em-dash near skeleton claim."
+      }
+    ],
+    "gold_rewrite": "LLMs do not produce truth. They are not intelligent. What they do is extract the structure of how we collectively think — imperfect, but the closest shared logical foundation we have.",
+    "regression_check": "All three claims preserved; flatter Robinson register.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:95-99",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier2_line132",
+    "prose_in": "Impure, yes. Incomplete, certainly. But oriented in the right direction.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "balanced_cadence",
+        "evidence": "Checks: three-beat \"X, yes. Y, certainly. But Z.\" cadence collapsed."
+      }
+    ],
+    "gold_rewrite": "Impure and incomplete. Oriented toward something, at least.",
+    "regression_check": "Claim intact; less TED-talk cadence.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:101-105",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier2_line140",
+    "prose_in": "Single cells became organisms. Organisms became intelligent. Intelligence became capable of reflecting on its own existence. All from a single, simple pressure.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "staircase_anaphora",
+        "evidence": "Checks: staircase-of-emergence anaphora removed."
+      }
+    ],
+    "gold_rewrite": "Over billions of years, cells became organisms, and eventually some of those organisms learned to reflect on their own existence — from one simple pressure, applied long enough.",
+    "regression_check": "One em-dash retained within paragraph cap; continuous sentence reads as summary, not sermon cadence.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:107-111",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier2_line146",
+    "prose_in": "Not because we designed it, but because we set a pressure in motion and let it run.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "not_because_x_but_because_y",
+        "evidence": "Checks: eliminates third \"Not because X, but because Y\" instance."
+      }
+    ],
+    "gold_rewrite": "We would not design it. We would set one pressure and let it run.",
+    "regression_check": "Claim preserved; flatter wording than \"pressure in motion\".",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:113-117",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier2_line158",
+    "prose_in": "But it is the first mirror large enough to show us the shape of our own collective reasoning — the logic beneath the words, the structure beneath the noise, the common skeleton that connects every discipline and every community, however different their surfaces appear.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "anaphoric_x_beneath_y_triplet",
+        "evidence": "Checks: removes \"the X beneath the Y\" triplet."
+      },
+      {
+        "pattern_id": "skeleton_metaphor",
+        "evidence": "Checks: removes fifth skeleton instance."
+      },
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Before uses em-dash before explanatory triplet."
+      }
+    ],
+    "gold_rewrite": "But it is the first mirror large enough to show us the shape of how we reason together.",
+    "regression_check": "Claim preserved; shorter landing beat before final image.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:119-123",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier2_line162",
+    "prose_in": "What looks back at us from that mirror — whether it is the common world or only a more articulate version of our own confusion — is a question we can now, for the first time, begin to ask with the right tools.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "cosmic_koan",
+        "evidence": "Checks: cosmic-koan balanced antinomy broken."
+      },
+      {
+        "pattern_id": "balanced_antinomy",
+        "evidence": "Before balances common world vs articulate confusion."
+      },
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Before uses paired em-dashes around antinomy."
+      }
+    ],
+    "gold_rewrite": "I do not know whether what the mirror shows is the common world, or just a sharper picture of our confusion. The instrument is new. The question is very old.",
+    "regression_check": "Owns uncertainty with \"I do not know\"; ends on image/statement pair, not synthesizing dichotomy.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:125-129",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier2_line86",
+    "prose_in": "every academic paper, every forum argument, every love letter and legal brief and recipe and rant, every social media post in every language.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "every_x_anaphora",
+        "evidence": "Checks: drops four-times-anaphoric \"every X\"."
+      }
+    ],
+    "gold_rewrite": "papers, forum arguments, love letters, legal briefs, recipes, rants, social-media posts in every language we have written in.",
+    "regression_check": "Retains list but flattens anaphora; claim intact.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:131-135",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier2_line138",
+    "prose_in": "The mechanism of reinforcement learning is strikingly simple. The model has one objective: be better. Better at what? At achieving a reward signal. How to get there? No prescribed path. No human-designed strategy. Just iteration…",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "q_and_a_staircase",
+        "evidence": "Checks: Q&A staircase gone."
+      },
+      {
+        "pattern_id": "ai_adverb",
+        "evidence": "Checks: \"strikingly\" AI-adverb dropped."
+      },
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "After keeps objective phrase bracketed; before has fragment staircase."
+      }
+    ],
+    "gold_rewrite": "Reinforcement learning's mechanism is simple. The model has one objective — achieving a reward signal — and no prescribed path to it. Just iteration: millions of attempts, each one slightly adjusted by what worked.",
+    "regression_check": "Claim intact; reads like technical description, not TED opening.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:137-141",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier3_asyndeton_line68",
+    "prose_in": "simple, legible, universal",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "asyndeton_adjective_triplet",
+        "evidence": "Tier 3 pass: adjective-triplet cull."
+      }
+    ],
+    "gold_rewrite": "simple and legible",
+    "regression_check": "Systematic pass converts triplets to two-item lists or drops modifiers.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:151-151",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier3_asyndeton_line76",
+    "prose_in": "processes, algorithms, computations",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "asyndeton_adjective_triplet",
+        "evidence": "Tier 3 pass: adjective-triplet cull."
+      }
+    ],
+    "gold_rewrite": "processes and algorithms",
+    "regression_check": "Systematic pass converts triplets to two-item lists or drops modifiers.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:151-151",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier3_asyndeton_line86",
+    "prose_in": "crude, unprocessed, raw",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "asyndeton_adjective_triplet",
+        "evidence": "Tier 3 pass: adjective-triplet cull."
+      }
+    ],
+    "gold_rewrite": "raw",
+    "regression_check": "Systematic pass drops redundant modifiers.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:151-151",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier3_asyndeton_line98",
+    "prose_in": "blind, irrational, striving",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "asyndeton_adjective_triplet",
+        "evidence": "Tier 3 pass: adjective-triplet cull."
+      }
+    ],
+    "gold_rewrite": "blind and striving",
+    "regression_check": "Systematic pass converts triplets to two-item lists.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:151-151",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier3_asyndeton_line132",
+    "prose_in": "special, embodied, imperfect",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "asyndeton_adjective_triplet",
+        "evidence": "Tier 3 pass: adjective-triplet cull."
+      }
+    ],
+    "gold_rewrite": "",
+    "regression_check": "Drop entirely in the Tier 2.9 rewrite.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:151-151",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier3_ai_adverb_uncomfortable_precision",
+    "prose_in": "uncomfortable precision",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "ai_adverb_strip",
+        "evidence": "Tier 3 pass: AI-adverb strip."
+      }
+    ],
+    "gold_rewrite": "precision",
+    "regression_check": "Drop adverb/adjective; keep noun.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:152-152",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier3_ai_adverb_strikingly_simple",
+    "prose_in": "strikingly simple",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "ai_adverb_strip",
+        "evidence": "Tier 3 pass: AI-adverb strip."
+      }
+    ],
+    "gold_rewrite": "simple",
+    "regression_check": "Drop adverb; keep adjective.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:152-152",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier3_ai_adverb_profoundly_useful",
+    "prose_in": "profoundly useful",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "ai_adverb_strip",
+        "evidence": "Tier 3 pass: AI-adverb strip."
+      }
+    ],
+    "gold_rewrite": "useful",
+    "regression_check": "Drop adverb; keep adjective.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:152-152",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier3_ai_adverb_faithfully_compressed",
+    "prose_in": "faithfully compressed",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "ai_adverb_strip",
+        "evidence": "Tier 3 pass: AI-adverb strip."
+      }
+    ],
+    "gold_rewrite": "compressed",
+    "regression_check": "Drop adverb; keep verb/adjective.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:152-152",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier3_ai_adverb_impeccable_reasoning",
+    "prose_in": "impeccable reasoning",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "ai_adverb_strip",
+        "evidence": "Tier 3 pass: AI-adverb strip."
+      }
+    ],
+    "gold_rewrite": "reasoning",
+    "regression_check": "Drop adjective; keep noun.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:152-152",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r01_humans_rewrite_pattern_1",
+    "prose_in": "This essay explores the ways in which X shapes Y.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "aim_framing",
+        "evidence": "Rewrite patterns table: delete meta-framing."
+      }
+    ],
+    "gold_rewrite": "",
+    "regression_check": "Cut the sentence. Start with the thing.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_01/researcher-humans_report.md:51-59",
+      "round": "slop_revision_round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r01_humans_rewrite_pattern_2",
+    "prose_in": "It is important to note that X is often Y.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "hedged_declarative",
+        "evidence": "Rewrite patterns table: strip hedges from declarative claims."
+      }
+    ],
+    "gold_rewrite": "X is Y.",
+    "regression_check": "Strip hedges from declarative claims.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_01/researcher-humans_report.md:51-59",
+      "round": "slop_revision_round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r01_humans_rewrite_pattern_4",
+    "prose_in": "Rather than viewing X as Y, we might instead consider it as Z.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "not_x_but_y_reflex",
+        "evidence": "Rewrite patterns table: kill the not-X-but-Y reflex; let both stand."
+      }
+    ],
+    "gold_rewrite": "X looks like Y. It is also Z.",
+    "regression_check": "Let both claims stand instead of using contrast reflex.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_01/researcher-humans_report.md:51-59",
+      "round": "slop_revision_round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r01_audit_line74_fix",
+    "prose_in": "capable of describing not only logical inference but any computable process — a web server, a simulation of the atmosphere, a system that plays chess.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "not_x_but_y_inversion",
+        "evidence": "Audit tag: NV."
+      },
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Audit tag: EM."
+      },
+      {
+        "pattern_id": "exotic_breadth_triplet",
+        "evidence": "Audit: exotic-breadth triplet."
+      }
+    ],
+    "gold_rewrite": "capable of describing any computable process — web servers, weather simulations, chess engines.",
+    "regression_check": "Fix drops not-only/but and reduces exotic triplet while preserving claim.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_01/researcher-audit_report.md:30-35",
+      "round": "slop_revision_round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r01_audit_line76_cost_fix",
+    "prose_in": "a cost many people will never pay, and a cost that excludes most of humanity from whatever common ground they create.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "anaphoric_pair",
+        "evidence": "Audit tag: ANP; \"a cost X, and a cost Y\"."
+      },
+      {
+        "pattern_id": "balanced_cadence",
+        "evidence": "Audit tag: BAL."
+      }
+    ],
+    "gold_rewrite": "a cost most people will never pay, which excludes most of humanity from that common ground.",
+    "regression_check": "Fix removes repeated anaphoric \"a cost\" frame.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_01/researcher-audit_report.md:36-39",
+      "round": "slop_revision_round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r01_audit_line84_something_fix",
+    "prose_in": "Something new has been built that fits this description — though, like programming languages before it, nobody built it for this purpose.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "something_x_opener",
+        "evidence": "Audit tag: SX."
+      },
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Audit tag: EM."
+      }
+    ],
+    "gold_rewrite": "A new tool fits this description — though, like programming languages, it wasn't built for this purpose.",
+    "regression_check": "Fix removes Something-X opener; keeps claim.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_01/researcher-audit_report.md:43-46",
+      "round": "slop_revision_round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r01_audit_line90_fix",
+    "prose_in": "What the training process does is not memorization — it is compression.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "not_x_it_is_y_inversion",
+        "evidence": "Audit tag: NV."
+      },
+      {
+        "pattern_id": "balanced_cadence",
+        "evidence": "Audit tag: BAL."
+      },
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Audit tag: EM."
+      }
+    ],
+    "gold_rewrite": "Training isn't memorization; it's compression.",
+    "regression_check": "Fix removes em-dash inversion using flatter declarative contrast.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_01/researcher-audit_report.md:47-50",
+      "round": "slop_revision_round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r01_audit_line104_fix",
+    "prose_in": "The evaluation of a large language model, then, is essentially an evaluation of how effectively it distills human logic from the mine of human logic.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "balanced_cadence",
+        "evidence": "Audit tag: BAL."
+      },
+      {
+        "pattern_id": "grand_concept",
+        "evidence": "Audit tag: GC; circular human-logic phrasing."
+      },
+      {
+        "pattern_id": "hedge_word",
+        "evidence": "Audit: \"essentially\" is an AI hedge."
+      }
+    ],
+    "gold_rewrite": "Evaluating an LLM, then, is really evaluating how well it distills that raw material.",
+    "regression_check": "Fix removes circular phrasing and hedge while keeping evaluation claim.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_01/researcher-audit_report.md:54-57",
+      "round": "slop_revision_round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_structural_gap4_qa_declarative",
+    "prose_in": "Can we go further? Can the crystal be refined?",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "q_and_a_sequence",
+        "evidence": "Gap 4: Q&A sequences are a chat-trained AI tell."
+      }
+    ],
+    "gold_rewrite": "Whether the crystal can be refined is the next question.",
+    "regression_check": "Rewrite Q&A as declaratives; mechanical one-pass fix.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-structural_report.md:76-86",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_auditor_l76_philosophical_program",
+    "prose_in": "Their grammar grew bottom-up out of need, not from philosophical decree.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "dramatized_wording",
+        "evidence": "Rationale: \"decree\" reads dramatized/TED-flavored."
+      }
+    ],
+    "gold_rewrite": "Their grammar grew bottom-up out of need, not from a philosophical program.",
+    "regression_check": "Applied edit; more accurate and less stagey.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_report.md:32-35",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_auditor_l88_grand_abstract",
+    "prose_in": "closer to an amalgamation of collective human consciousness than to a dataset.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "grand_ai_abstract",
+        "evidence": "Rationale: residual grand-AI abstract."
+      }
+    ],
+    "gold_rewrite": "closer to a record of how we collectively think than to a dataset.",
+    "regression_check": "Applied edit keeps contrast with plainer noun.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_report.md:37-40",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_auditor_l90_redundant_kicker_delete",
+    "prose_in": "The internet is the largest store of human reasoning we have.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "redundant_aphoristic_kicker",
+        "evidence": "Rationale: echoes L88 largest-archive framing."
+      }
+    ],
+    "gold_rewrite": "",
+    "regression_check": "Applied deletion; paragraph lands on substantive claim instead.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_report.md:42-45",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_auditor_l114_bare_architecture",
+    "prose_in": "it makes the conflict *legible*, exposing the bare architecture of disagreement.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "genitive_abstraction",
+        "evidence": "Rationale: residual genitive abstraction / architecture-of-X figure."
+      },
+      {
+        "pattern_id": "italicized_abstract_emphasis",
+        "evidence": "Rationale: drops italics on legible."
+      }
+    ],
+    "gold_rewrite": "it makes the conflict *legible*, showing what the two sides are actually disagreeing about.",
+    "regression_check": "Applied edit does same logical work without genitive flourish.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_report.md:47-50",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_auditor_l116_stranded_preposition",
+    "prose_in": "They give the parties a common geometry to compare reasoning in.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "awkward_preposition_stranding",
+        "evidence": "Rationale: preposition stranding felt awkward."
+      },
+      {
+        "pattern_id": "geometry_metaphor_cluster",
+        "evidence": "Inquisitor kept geometry but fixed phrasing."
+      }
+    ],
+    "gold_rewrite": "They give the parties a common geometry for comparing their reasoning.",
+    "regression_check": "Applied modified edit preserves load-bearing geometry metaphor.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_report.md:52-55",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_auditor_l128_duplicate_antithesis",
+    "prose_in": "carry meaning in their logic rather than in their words.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "duplicate_antithesis",
+        "evidence": "Rationale: duplicates next sentence \"not in language\" antithesis."
+      }
+    ],
+    "gold_rewrite": "carry meaning in their logic.",
+    "regression_check": "Applied deletion leaves the next sentence to do the antithesis cleanly.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_report.md:57-60",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_auditor_l134_parallel_verb",
+    "prose_in": "LLMs capture it, crystallize it, and can serve as common ground between communities.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "broken_parallel_verb_structure",
+        "evidence": "Rationale: auxiliary \"can\" breaks capture/crystallize/serve parallel."
+      }
+    ],
+    "gold_rewrite": "LLMs capture it, crystallize it, and serve as common ground between communities.",
+    "regression_check": "Applied modified edit drops modal without folding next sentence.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_report.md:62-65",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_reviewer_l21_doubled_it",
+    "prose_in": "a human mind can hold only so much, and it can hold it only through natural language.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "unclear_antecedent",
+        "evidence": "Bug type: first \"it\" = mind, second \"it\" = so much."
+      }
+    ],
+    "gold_rewrite": "a human mind can hold only so much, and only through natural language.",
+    "regression_check": "Applied verb-elision removes doubled pronoun while preserving capacity + medium constraints.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/reviewer_report.md:67-73",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_reviewer_l25_tense_backshift",
+    "prose_in": "He said he was observing the zebras, and they need protection.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "indirect_speech_tense_mismatch",
+        "evidence": "Bug type: said past + need present; indirect speech requires backshift."
+      }
+    ],
+    "gold_rewrite": "He said he was observing the zebras, and that they needed protection.",
+    "regression_check": "Applied fix makes indirect-clause boundary explicit and backshifts tense.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/reviewer_report.md:75-81",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_reviewer_l70_label_collision",
+    "prose_in": "The path from A to B may sit inside a larger A-to-B.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "label_collision",
+        "evidence": "Bug type: reused A/B labels for two distinct paths misleads."
+      }
+    ],
+    "gold_rewrite": "The path from A to B may sit inside a larger path of the same kind.",
+    "regression_check": "Applied fix preserves recursion without label collision.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/reviewer_report.md:83-89",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_reviewer_l96_benchmark_qualifier",
+    "prose_in": "the answer can drop by half on standard benchmarks.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "loose_technical_plural",
+        "evidence": "Bug type: GSM-Symbolic is a math-reasoning benchmark family."
+      }
+    ],
+    "gold_rewrite": "the answer can drop by half on standard math benchmarks.",
+    "regression_check": "Applied conservative qualifier ties benchmark to math problem.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/reviewer_report.md:91-97",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_reviewer_l100_antecedent_anchor",
+    "prose_in": "They are there because we made the training data...",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "cross_paragraph_antecedent",
+        "evidence": "Bug type: \"They\" reaches across paragraph break to human tendencies."
+      }
+    ],
+    "gold_rewrite": "Those tendencies are there because we made the training data...",
+    "regression_check": "Applied two-word fix anchors antecedent at paragraph boundary.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/reviewer_report.md:99-104",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_reviewer_l144_parallel_completion",
+    "prose_in": "The pressure remains, and the complexity it produces.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "sentence_completion",
+        "evidence": "Bug type: second conjunct lacks explicit verb."
+      }
+    ],
+    "gold_rewrite": "The pressure remains, and so does the complexity it produces.",
+    "regression_check": "Applied minimal repair completes X remains / Y remains parallel.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/reviewer_report.md:106-112",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r02_change_plan_a_l21_binary_contrast",
+    "prose_in": "This is not a failure of intelligence or goodwill. It is how language works. Communities use the same word for different things, and they use different words for the same thing.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "its_not_this_its_that",
+        "evidence": "Pattern: structures.md \"It's not this. It's that.\" mechanical contrast."
+      }
+    ],
+    "gold_rewrite": "Language works this way. Communities use the same word for different things, and they use different words for the same thing.",
+    "regression_check": "Drops the not-X/it-is-Y frame; keeps content.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_02/auditor_change_plan.md:11-22",
+      "round": "round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r02_change_plan_b_l88_not_just",
+    "prose_in": "Serious and casual writing side by side. This is not just data. It is close to an amalgamation of collective human consciousness, and the crude unprocessed form of human logic.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "not_just_additive_hedge",
+        "evidence": "Pattern: binary contrast + \"not just\" additive hedge."
+      }
+    ],
+    "gold_rewrite": "Serious and casual writing side by side. The archive is closer to an amalgamation of collective human consciousness than to a dataset, the crude unprocessed form of human logic.",
+    "regression_check": "Removes not-just / it-is reveal; preserves contrast with data inside positive sentence.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_02/auditor_change_plan.md:25-36",
+      "round": "round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r02_change_plan_c_l94_meta_commentary",
+    "prose_in": "Before I make my central claim, I should be honest. LLMs are imperfect in two different ways, and the difference matters.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "meta_commentary",
+        "evidence": "Pattern: criteria #10 meta-commentary / confession setup."
+      }
+    ],
+    "gold_rewrite": "LLMs are imperfect in two different ways, and the difference matters.",
+    "regression_check": "Cut announcement; next sentence does the work.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_02/auditor_change_plan.md:39-50",
+      "round": "round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r02_change_plan_d_l126_telling_not_showing",
+    "prose_in": "This is useful. If we use LLMs as communication tools, they force us to think through our own logic instead of leaning on rhetorical shortcuts.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "telling_not_showing",
+        "evidence": "Pattern: phrases.md \"This is useful\" announcement."
+      }
+    ],
+    "gold_rewrite": "Used as communication tools, LLMs force us to think through our own logic instead of leaning on rhetorical shortcuts.",
+    "regression_check": "Cuts two-word announcement and recombines sentence.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_02/auditor_change_plan.md:53-64",
+      "round": "round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r02_change_plan_e_l128_there_is",
+    "prose_in": "There is a practical path. Asking communities to learn each other's jargon rarely succeeds, and the translation always loses something.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "there_is_opener",
+        "evidence": "Pattern: narrator-from-distance There-is opener."
+      },
+      {
+        "pattern_id": "lazy_extreme",
+        "evidence": "Pattern: lazy extreme \"always\"."
+      }
+    ],
+    "gold_rewrite": "Asking communities to learn each other's jargon rarely succeeds, and the translation usually loses something.",
+    "regression_check": "Drops There-is opener; always → usually avoids overstatement.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_02/auditor_change_plan.md:67-78",
+      "round": "round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r02_change_plan_f_l138_there_may_be",
+    "prose_in": "There may be a way past this limitation. I think it lies in the principle behind reinforcement learning. The principle, that is, not the specific RL methods we have today.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "there_may_be_opener",
+        "evidence": "Pattern: narrator-from-distance promissory hand-wave."
+      }
+    ],
+    "gold_rewrite": "The principle behind reinforcement learning, not the specific RL methods we have today, points past this limitation.",
+    "regression_check": "Compresses promissory opener and clarifiers into direct claim.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_02/auditor_change_plan.md:81-92",
+      "round": "round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r02_change_plan_g_l148_binary_contrast",
+    "prose_in": "If that happens, the distillation of human logic is not the final destination. It is a step.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "mechanical_contrast",
+        "evidence": "Pattern: \"Not X. It is Y.\" binary contrast."
+      }
+    ],
+    "gold_rewrite": "If that happens, the distillation of human logic is one step, not the destination.",
+    "regression_check": "Leads with positive claim; contrast becomes comma-bound clause rather than reveal.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_02/auditor_change_plan.md:95-106",
+      "round": "round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r02_change_plan_h_l98_parallel_quintet",
+    "prose_in": "There is a second kind of imperfection that engineering cannot remove. A large language model reasons the way we reason. It argues a point with more confidence than the evidence warrants, because we do. It agrees with whoever is talking to it instead of pushing back, because that is what our texts reward. It reaches for a plausible-sounding answer instead of saying \"I don't know.\" It defends conclusions we already hold and ignores arguments that lead somewhere uncomfortable. These are human tendencies, compressed into the training data along with everything else.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "even_sentence_rhythm",
+        "evidence": "Pattern: criterion #19 even sentence rhythm."
+      },
+      {
+        "pattern_id": "parallel_quintet",
+        "evidence": "Pattern: criterion #3 parallel quintet."
+      }
+    ],
+    "gold_rewrite": "There is a second kind of imperfection that engineering cannot remove. A large language model reasons the way we reason. It argues with more confidence than the evidence warrants, agrees with whoever is talking to it, reaches for a plausible answer instead of saying \"I don't know,\" and defends the conclusions we already hold while ignoring arguments that lead somewhere uncomfortable. These are human tendencies, compressed into the training data along with everything else.",
+    "regression_check": "Collapses four It-X sentences into one sentence with four verbs; drops filler causal asides.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_02/auditor_change_plan.md:109-120",
+      "round": "round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r02_change_plan_i_l104_staccato",
+    "prose_in": "LLMs do not produce truth. They are not intelligent. They extract the structure of how we collectively think. The result is imperfect, but the closest shared logical foundation we have.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "even_sentence_rhythm",
+        "evidence": "Pattern: criterion #19 even rhythm."
+      },
+      {
+        "pattern_id": "staccato_fragmentation",
+        "evidence": "Pattern: structures.md staccato fragmentation."
+      }
+    ],
+    "gold_rewrite": "LLMs do not produce truth, and they are not intelligent. What they extract is the structure of how we collectively think: imperfect, but the closest shared logical foundation we have.",
+    "regression_check": "Uses revised after: no em-dash; combines parallel sentences and trailing fragment.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_02/auditor_change_plan.md:123-139",
+      "round": "round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r02_change_plan_j_l114_parallel_logic",
+    "prose_in": "The logic does not resolve the conflict. It makes the conflict *legible*. It shows the bare architecture of disagreement.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "even_sentence_rhythm",
+        "evidence": "Pattern: criterion #19 even rhythm."
+      },
+      {
+        "pattern_id": "parallel_triplet",
+        "evidence": "Pattern: criterion #3 parallel triplet."
+      }
+    ],
+    "gold_rewrite": "The logic does not resolve the conflict; it makes the conflict *legible*, exposing the bare architecture of disagreement.",
+    "regression_check": "Uses revised after: semicolon/comma/participial phrase removes triplet rhythm without em-dash.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_02/auditor_change_plan.md:142-157",
+      "round": "round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_01_l27_causal_connective",
+    "prose_in": "Both are right inside their own frame. The distance between them feels unbridgeable. They have the words. But the words cannot carry the full weight of what they mean.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "stripped_causal_connective",
+        "evidence": "Rationale: three short declaratives before the But make \"They have the words\" stand alone awkwardly."
+      }
+    ],
+    "gold_rewrite": "Both are right inside their own frame, and the distance between them feels unbridgeable. They have the words, but the words cannot carry the full weight of what they mean.",
+    "regression_check": "Restores comma + but to smooth cause-effect link without losing punch.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:13-16",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_02_l35_throat_clearing",
+    "prose_in": "It shapes what can be said and bends what is meant. It fractures meaning for each community that uses it. Wittgenstein saw this. Meaning is not a label we stick on an object. Meaning is use. Use varies across communities and disciplines.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "throat_clearing",
+        "evidence": "Rationale: \"Wittgenstein saw this\" becomes throat-clearing in context."
+      },
+      {
+        "pattern_id": "mechanical_parallel_openers",
+        "evidence": "Rationale: six declaratives with parallel It/Meaning/Use openers read mechanical."
+      }
+    ],
+    "gold_rewrite": "It shapes what can be said, and bends what is meant. It fractures meaning for each community that uses it. Wittgenstein put it directly: meaning is not a label we stick on an object — meaning is use, and use varies across communities and disciplines.",
+    "regression_check": "Folds three short sentences into one attribution clause; preserves philosopher reference.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:18-21",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_03_l90_redundant_grand_claim",
+    "prose_in": "The internet is the largest store of human reasoning we have.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "redundant_grand_claim",
+        "evidence": "Rationale: two consecutive paragraphs close on grand internet-is claims."
+      }
+    ],
+    "gold_rewrite": "",
+    "regression_check": "Cut final sentence entirely; L88 already established framing.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:23-27",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_04_l88_grand_abstract",
+    "prose_in": "The archive is the crude unprocessed form of human logic, closer to an amalgamation of collective human consciousness than to a dataset.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "grand_ai_abstract",
+        "evidence": "Rationale: \"amalgamation of collective human consciousness\" is residual grand-AI abstract."
+      }
+    ],
+    "gold_rewrite": "The archive is the crude unprocessed form of human logic, closer to a record of how we collectively think than to a dataset.",
+    "regression_check": "Replacement is plainer and parallel to nearby reasoning language.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:29-32",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_05_l98_parallel_anaphora",
+    "prose_in": "It argues with more confidence than the evidence warrants, agrees with whoever is talking to it, reaches for a plausible answer instead of saying 'I don't know,' and defends conclusions we already hold while ignoring arguments that lead somewhere uncomfortable.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "four_fold_parallel_anaphora",
+        "evidence": "Rationale: four perfectly matched verb-clauses of similar length is architectural-symmetry tell."
+      }
+    ],
+    "gold_rewrite": "It argues with more confidence than the evidence warrants. It agrees with whoever is talking to it. It reaches for a plausible answer instead of admitting it does not know. And it defends conclusions we already hold rather than follow an argument somewhere uncomfortable.",
+    "regression_check": "Splits into separate sentences and varies clause length; rejected adding duplicate \"because we do\" tail.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:34-37",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_06_l102_geometric_grand_abstraction",
+    "prose_in": "When the model compresses the data, it strips away the surface of language. Cultural specifics fade. A trillion individual voices collapse into a geometric structure. The result is the purified, crystallized form of human logic.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "geometric_grand_abstraction",
+        "evidence": "Rationale: \"X collapse into geometric Y\" rhythm is a tell."
+      },
+      {
+        "pattern_id": "purified_crystallized_doublet",
+        "evidence": "Rationale: purified/crystallized doublet adds nothing once compressed is in the verb."
+      }
+    ],
+    "gold_rewrite": "When the model compresses the data, it strips away the surface of language. Cultural specifics fade. A trillion voices collapse into shared structure. The result is human logic in compressed form.",
+    "regression_check": "Compresses two minor AI tells while keeping compression claim.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:39-42",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_07_l102_doubled_abstraction",
+    "prose_in": "What they extract is the structure of how we collectively think: imperfect, but the closest shared logical foundation we have.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "doubled_abstraction",
+        "evidence": "Rationale: \"the structure of how\" is a doubled abstraction."
+      },
+      {
+        "pattern_id": "cleft_construction",
+        "evidence": "Rationale: \"what X is Y\" cleft is AI-flavored."
+      }
+    ],
+    "gold_rewrite": "They extract how we collectively reason — imperfect, but the closest shared foundation we have.",
+    "regression_check": "Drops structure-of and cleft; loses no intended content per rationale.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:44-47",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_08_l114_genitive_abstraction",
+    "prose_in": "The logic does not resolve the conflict; it makes the conflict *legible*, exposing the bare architecture of disagreement.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "genitive_abstraction",
+        "evidence": "Rationale: \"architecture of disagreement\" is an architecture-of-X figure."
+      },
+      {
+        "pattern_id": "italicized_abstract_emphasis",
+        "evidence": "Rationale: italicized legible + abstract noun cluster is a known AI move."
+      }
+    ],
+    "gold_rewrite": "The logic does not resolve the conflict; it makes the conflict legible, showing what the two sides are actually disagreeing about.",
+    "regression_check": "Concrete replacement; drops italics.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:49-52",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_09_l116_geometry_cluster",
+    "prose_in": "They give the parties a common geometry to compare reasoning in. … The LLM has compressed both reasoning patterns into the same geometry, and that is enough.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "metaphor_cluster",
+        "evidence": "Rationale: geometry appears 2× plus shared/dissolved logical space cluster."
+      },
+      {
+        "pattern_id": "awkward_preposition_stranding",
+        "evidence": "Rationale: \"common geometry to compare reasoning in\" preposition stranding feels awkward."
+      }
+    ],
+    "gold_rewrite": "They give the parties a shared way to compare their reasoning. … The LLM has compressed both reasoning patterns into one representation, and that is enough.",
+    "regression_check": "Thins geometry to reduce tic; changes first sentence and second sentence.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:54-57",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_10_l122_two_word_kicker",
+    "prose_in": "I had said 'active learning' and assumed the rest was implicit. It was not. The diagram followed my words, not my picture of the system.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "two_word_kicker",
+        "evidence": "Rationale: same two-word kicker pattern as preserved \"Humanity did not.\""
+      },
+      {
+        "pattern_id": "x_not_y_antithesis",
+        "evidence": "Rationale: \"my words, not my picture\" antithesis softened."
+      }
+    ],
+    "gold_rewrite": "I had said 'active learning' and assumed the rest was implicit. It wasn't. The diagram followed my words rather than my picture of the system.",
+    "regression_check": "Minimal cadence edit; preserves technical content.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:59-63",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_11_l124_causal_connectives",
+    "prose_in": "My first instinct was to blame the LLM. The problem was upstream. The words I gave it did not represent what was in my head. Drawing on the most common shape of an active learning pipeline, the LLM gave me what my prompt implied. It was not what I had meant.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "stripped_causal_connectives",
+        "evidence": "Rationale: five short declaratives lost their causal connectives."
+      }
+    ],
+    "gold_rewrite": "My first instinct was to blame the LLM, but the problem was upstream: the words I gave it did not represent what was in my head. Drawing on the most common shape of an active learning pipeline, the LLM gave me what my prompt implied — not what I had meant.",
+    "regression_check": "Restores but/colon/em-dash logical flow; preserves all anecdote content.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:65-68",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_12_l134_tricolon_join",
+    "prose_in": "My argument so far rests on one claim about human logic. LLMs capture it, crystallize it, and can serve as common ground between communities. Human logic is not where the story ends.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "tricolon",
+        "evidence": "Rationale: three-verb tricolon capture/crystallize/serve; third verb is result, not parallel act."
+      },
+      {
+        "pattern_id": "abrupt_section_join",
+        "evidence": "Rationale: add But to soften abrupt join into Section V pivot."
+      }
+    ],
+    "gold_rewrite": "My argument so far rests on one claim about human logic: that LLMs capture and crystallize it, and that it can serve as common ground between communities. But human logic is not where the story ends.",
+    "regression_check": "Reduces tricolon to doublet + result clause; restores section pivot.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:70-73",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_13_l142_aphoristic_kicker",
+    "prose_in": "Cells became organisms. Some of those organisms learned to reflect on their own existence. All from one simple pressure, applied long enough.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "aphoristic_kicker",
+        "evidence": "Rationale: standalone fragment paragraph-closer lands TED-style."
+      }
+    ],
+    "gold_rewrite": "Cells became organisms. Some of those organisms learned to reflect on their own existence — all from one simple pressure, applied long enough.",
+    "regression_check": "Folds aphoristic fragment into prior sentence; repeated pressure claim remains.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:75-78",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_15_l158_paired_anaphora",
+    "prose_in": "We have been sleeping. We are trapped inside our separate languages and disciplines, each of us taking the vocabulary of our community for the structure of the world. The biologist and the warrior wake into different worlds. The ecologist and the engineer do too.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "paired_anaphora",
+        "evidence": "Rationale: biologist/warrior then ecologist/engineer paired rhythm."
+      },
+      {
+        "pattern_id": "do_too_tag",
+        "evidence": "Rationale: \"do too\" tag flagged as residual rhythm."
+      }
+    ],
+    "gold_rewrite": "We have been sleeping, trapped inside our separate languages and disciplines, each of us taking the vocabulary of our community for the structure of the world. The biologist and the warrior wake into different worlds, and so do the ecologist and the engineer.",
+    "regression_check": "Keeps parallel without do-too tag; softens staccato opener.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:85-88",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_16_l160_metaphor_pileup",
+    "prose_in": "The crystal of human logic is not Logos. People built it. It carries the flaws and insights we have committed to language. But it is the first mirror large enough to show us the shape of how we reason together.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "metaphor_pileup",
+        "evidence": "Rationale: mirror is fourth metaphor in crystal/skeleton-equivalent/mirror cluster."
+      },
+      {
+        "pattern_id": "shape_of_abstraction",
+        "evidence": "Rationale: drops \"the shape of how\" genitive abstraction."
+      },
+      {
+        "pattern_id": "stripped_causal_connective",
+        "evidence": "Rationale: folds People built it / It carries to restore flow."
+      }
+    ],
+    "gold_rewrite": "The crystal of human logic is not Logos. People built it, and it carries the flaws and insights we have committed to language. But it is the first artifact large enough to show us how we reason together.",
+    "regression_check": "Uses concrete artifact; removes shape-of abstraction and metaphor pile-up.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:90-93",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_17_l164_cosmic_koan",
+    "prose_in": "I do not know whether what we see in it is the common world or a sharper picture of our confusion. The instrument is new. The question is old.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "cosmic_koan",
+        "evidence": "Rationale: common world vs sharper confusion cosmic close."
+      },
+      {
+        "pattern_id": "twin_balance_kicker",
+        "evidence": "Rationale: \"The instrument is new. The question is old.\" X/Y balance kicker."
+      }
+    ],
+    "gold_rewrite": "I do not know yet whether the mirror shows us the common world or only a sharper picture of our confusion. We have the instrument now; we did not before.",
+    "regression_check": "Preserves epistemic humility; drops koan structure and twin-balance aphorism.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:95-98",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_18_l72_textbook_spectrum",
+    "prose_in": "Logic runs along a spectrum. At the informal end, we have everyday reasoning about what to eat for lunch. At the formal end, mathematical proof. Computer languages sit in the middle. They are precise enough to be unambiguous and flexible enough to describe real-world processes. They strip a process down to its essential steps.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "textbook_spectrum",
+        "evidence": "Rationale: at-one-end / at-the-other / in-the-middle balance reads textbook-style."
+      }
+    ],
+    "gold_rewrite": "Logic runs along a spectrum from the everyday — reasoning about what to eat for lunch — to the formal — mathematical proof. Computer languages sit between. They are precise enough to be unambiguous and flexible enough to describe real-world processes. They strip a process down to its essential steps.",
+    "regression_check": "Compresses balanced spectrum into one sentence with aside-like insertions.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:104-107",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_19_l76_dramatized_wording",
+    "prose_in": "Their grammar grew bottom-up out of need, not from philosophical decree.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "dramatized_wording",
+        "evidence": "Rationale: decree reads dramatized and TED-flavored."
+      }
+    ],
+    "gold_rewrite": "Their grammar grew bottom-up out of need, not from a philosophical program.",
+    "regression_check": "Program is the actual word for the Leibniz/Frege/Vienna-Circle frame.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:109-112",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_20_l128_duplicate_antithesis",
+    "prose_in": "They can generate visual and structural representations of reasoning that, like code, carry meaning in their logic rather than in their words. A diagram an LLM produces from a biologist's reasoning can be set next to a diagram it produces from a computer scientist's reasoning, because both come from the same distilled logical space. The translation happens in structure, not in language.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "duplicate_antithesis",
+        "evidence": "Rationale: rather-than-in-words duplicates next sentence not-in-language antithesis."
+      }
+    ],
+    "gold_rewrite": "They can generate visual and structural representations of reasoning that, like code, carry meaning in their logic. A diagram an LLM produces from a biologist's reasoning can be set next to a diagram it produces from a computer scientist's reasoning, because both come from the same distilled logical space. The translation happens in structure, not in language.",
+    "regression_check": "Cut first antithesis; closing sentence does the work cleanly.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:114-117",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_21_l138_mid_sentence_inversion",
+    "prose_in": "The principle behind reinforcement learning, not the specific RL methods we have today, points past this limitation.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "mid_sentence_inversion",
+        "evidence": "Rationale: mid-sentence X-not-Y inversion reads defensive throat-clearing."
+      }
+    ],
+    "gold_rewrite": "The principle behind reinforcement learning points past this limitation. I mean the principle, not the specific RL methods we have today.",
+    "regression_check": "Source marks either keep or split as defensible; split reads like careful philosophical point.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:119-122",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_22_l148_anaphoric_pair",
+    "prose_in": "If that happens, the distillation of human logic is one step, not the destination. Iterative refinement of crystallized human reasoning, at scales no human mind can hold, may bring us asymptotically close to something we could call Logos. We would not have designed it. We would have set one pressure in motion and let it run.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "anaphoric_pair",
+        "evidence": "Rationale: collapses anaphoric We would not / We would have pair."
+      }
+    ],
+    "gold_rewrite": "If that happens, the distillation of human logic is one step, not the destination. Iterative refinement of crystallized human reasoning, at scales no human mind can hold, may bring us asymptotically close to something we could call Logos — not by design, but by setting one pressure in motion and letting it run.",
+    "regression_check": "Source notes rewrite introduces one mild not-X-but-Y inversion but judges original pattern rarer and stronger.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:124-127",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  }
+]
