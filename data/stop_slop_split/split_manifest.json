@@ -1,0 +1,29 @@
+{
+  "source_corpus": "/home/miao/repos/HumanEmbedding",
+  "split_mode": "ratio",
+  "split_ratio": "60:20:20",
+  "split_seed": 42,
+  "stratified_by": [
+    "is_negative",
+    "label_quality"
+  ],
+  "counts": {
+    "train": 151,
+    "val": 50,
+    "test": 51,
+    "total": 252
+  },
+  "streams": {
+    "stream1_hand_labeled": 83,
+    "stream2_auto_diff": 147,
+    "stream3_worktree_mined": 30,
+    "stream4_patterns": 57
+  },
+  "post_merge": {
+    "items_kept": 258,
+    "items_dropped_no_signal": 2,
+    "duplicates_dropped": 6,
+    "unmapped_pattern_ids": {}
+  },
+  "generated_at": "2026-05-31T18:44:54.225730+00:00"
+}

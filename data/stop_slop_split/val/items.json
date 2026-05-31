@@ -1,0 +1,1112 @@
+[
+  {
+    "id": "stream2_v2_to_v3_15",
+    "prose_in": "And yet, for all their success, computer languages are still domain-specific. They describe processes, algorithms, computations. They cannot capture an argument about zebra conservation or a disagreement about land use or the full complexity of a scientific theory. They also require humans to learn a new language in order to use them — a cost many people will never pay, and a cost that excludes most of humanity from whatever common ground they create. They prove that logic can serve as a universal communication medium. They do not, by themselves, provide that medium for everything humans need to say.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (1 → 0)."
+      },
+      {
+        "pattern_id": "pseudo_profound_fragments",
+        "evidence": "Reduced pseudo profound fragments signature (1 → 0)."
+      }
+    ],
+    "gold_rewrite": "Yet computer languages are domain-specific. They describe processes and algorithms. They cannot capture an argument about zebra conservation or a disagreement about land use. They also require people to learn a new language to use them, a cost many people will never pay. They prove that logic can serve as a universal communication medium. They do not, on their own, provide that medium for everything we need to say.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v2.md → essay_v3.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v14_to_v15_39",
+    "prose_in": "If something of that kind did emerge, it could go beyond mediating between existing communities. It could expose places where the human embedding itself is consistently wrong — places in our language that steer reasoners across communities toward a conclusion that doesn't survive scrutiny, where the wrongness is invisible to anyone reasoning inside that language.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (1 → 0)."
+      },
+      {
+        "pattern_id": "hedge_stack",
+        "evidence": "Reduced stacked hedging (2 → 1); removed could."
+      }
+    ],
+    "gold_rewrite": "If something of that kind did emerge, the work would not stop at mediation between existing communities. It might also expose places where the human embedding itself is consistently wrong: places in our language that steer reasoners toward a conclusion that doesn't survive scrutiny, where the wrongness is invisible to anyone reasoning inside that language.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v14.md → essay_v15.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v15_to_v16_50",
+    "prose_in": "That analogy gets misused often. A future training run doesn't become wise because someone invoked the word \"evolution\" near a GPU cluster. Once human reasoning has been put into a form a machine can manipulate at scale, later systems could in principle be trained against pressures other than user approval. One candidate is predictive accuracy held against the world. Others — consistency between domains, forced revision when an experiment refuses to confirm a claim — sit on similar ground, and none of them is sufficient on its own. Several would be dangerous to scale without care. Whatever method comes next, the underlying shape is the same: a simple objective iterated at scale.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (2 → 0)."
+      },
+      {
+        "pattern_id": "hedge_stack",
+        "evidence": "Reduced stacked hedging (2 → 0); removed could, often."
+      }
+    ],
+    "gold_rewrite": "Evolution is not a magic analogy for GPUs. The useful resemblance is pressure without a prescribed path: variation, signal, revision. If machines ever move beyond human approval, it will be because they are trained against harsher pressures than politeness: prediction against the world, consistency across domains, forced revision under experiment, disagreement that cannot be flattered away. That is future work, not a description of present machines.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v15.md → essay_v16.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v16_to_v17_3",
+    "prose_in": "That failure was small enough to be embarrassing, which is why I trust it. I work between conservation biology and machine learning. Most of the daily work is not discovery first. It is translation. Not translation between English and another language, but between communities that have put different histories inside the same words.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "not_x_but_y_reveal",
+        "evidence": "Reduced not x but y signature (1 → 0)."
+      }
+    ],
+    "gold_rewrite": "I work between conservation biology and machine learning, and most of the daily work is translation between two communities that have, over decades of separate practice, put different histories into the same words. That kind of failure is the part of the work I keep coming back to.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v16.md → essay_v17.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_18_l72_textbook_spectrum",
+    "prose_in": "Logic runs along a spectrum. At the informal end, we have everyday reasoning about what to eat for lunch. At the formal end, mathematical proof. Computer languages sit in the middle. They are precise enough to be unambiguous and flexible enough to describe real-world processes. They strip a process down to its essential steps.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "vague_grand_abstraction",
+        "evidence": "Rationale: at-one-end / at-the-other / in-the-middle balance reads textbook-style."
+      }
+    ],
+    "gold_rewrite": "Logic runs along a spectrum from the everyday — reasoning about what to eat for lunch — to the formal — mathematical proof. Computer languages sit between. They are precise enough to be unambiguous and flexible enough to describe real-world processes. They strip a process down to its essential steps.",
+    "regression_check": "Compresses balanced spectrum into one sentence with aside-like insertions.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:104-107",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v15_to_v16_16",
+    "prose_in": "Code handles anything that is already shaped like a procedure: algorithms, data pipelines, models. Disagreement about values is much harder, since the only way to put it into code is by reducing it to an algorithmic decision, and the reduction is usually where the live part of the disagreement disappears. There is also an access problem. Most people will never write a line of code, and many of the community-to-community disagreements most worth translating happen among people who have no reason to learn. The tool one would actually want takes ordinary language as input and gives back something with the structure of code, without asking the user to first become a programmer.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "adverb_softener_intensifier",
+        "evidence": "Reduced softeners/intensifiers/adverb filler (2 → 0); removed actually."
+      }
+    ],
+    "gold_rewrite": "The missing tool would have to do something stranger. It would take ordinary language as input, expose the logic inside it, and return a structure that people outside the original vocabulary could inspect. It would need the cross-boundary force of code without first turning everyone into programmers.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v15.md → essay_v16.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_auditor_l88_grand_abstract",
+    "prose_in": "closer to an amalgamation of collective human consciousness than to a dataset.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "vague_grand_abstraction",
+        "evidence": "Rationale: residual grand-AI abstract."
+      }
+    ],
+    "gold_rewrite": "closer to a record of how we collectively think than to a dataset.",
+    "regression_check": "Applied edit keeps contrast with plainer noun.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_report.md:37-40",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream3_slop_round0_flagged_026",
+    "prose_in": "We have glimpsed it many times — in mathematics, in logic, in the code that reads the same in Tokyo as in Lima.",
+    "context_before": "We have glimpsed it many times. We have built small pieces of it — in mathematics, in logic, in the code that machines read the same way in every country on earth.",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "The audit caveats that this keeps an exotic pair; better still is to remove the geography."
+      }
+    ],
+    "gold_rewrite": "",
+    "regression_check": "The audit rewrite reduces one problem but keeps an em-dash plus decorative geography (“Tokyo as Lima”).",
+    "source": {
+      "stream": "worktree_mined",
+      "path": "docs/review/ai_slop_audit.md",
+      "round": "round_01"
+    },
+    "label_quality": "medium",
+    "is_negative": true
+  },
+  {
+    "id": "stream2_v15_to_v16_6",
+    "prose_in": "The problem appears outside of machine learning entirely. A field biologist who studied zebras in East Africa once told me about a morning when warriors from a nearby community came over to him on the grassland. They asked what he was doing, and he said he was watching the zebras — they were beautiful animals and needed protection. The warriors disagreed; they had been losing grass to the same zebras for several years. They hated the zebras for eating the grass their goats and cattle needed, and given any chance they would kill every zebra they saw.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (1 → 0)."
+      }
+    ],
+    "gold_rewrite": "The warriors hated those zebras. The zebras had been eating the grass their goats and cattle needed. Given the chance, they said, they would kill every zebra they saw.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v15.md → essay_v16.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v16_to_v17_47",
+    "prose_in": "By *Logos* I mean the order human reasoning tries, badly and partially, to track: the intelligibility by which things hang together before we understand them.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "word_choice_meta_commentary",
+        "evidence": "Reduced meta commentary on word choice signature (1 → 0)."
+      }
+    ],
+    "gold_rewrite": "The Greek word *Logos*, in Heraclitus and the traditions that came after him, points toward an ordering principle: the intelligibility according to which things hang together, whether or not anyone inside is positioned to grasp it. I am not trying to smuggle theology into a discussion about machine learning. I also don't want to pretend the older word has no use here. It marks a real gap, the gap between the way human beings actually reason in their lives and whatever broader order their reasoning is, with mixed success, trying to follow.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v16.md → essay_v17.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v2_to_v3_42",
+    "prose_in": "The parallel is imperfect — evolution operates on populations, reinforcement learning on individual models; evolution has no explicit objective function, while RL has a designed one. But even in RL, the designer sets only a very broad and simple goal. The specific paths to that goal are not prescribed. The human hand that sets the reward is light, and as the scale of iteration grows, the imprint of human subjectivity on the outcome becomes diluted. What remains is the pressure itself — the simple demand for improvement — and the emergent complexity that pressure produces.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (3 → 0)."
+      },
+      {
+        "pattern_id": "pseudo_profound_fragments",
+        "evidence": "Reduced pseudo profound fragments signature (1 → 0)."
+      }
+    ],
+    "gold_rewrite": "The parallel is imperfect. Evolution acts on populations, RL on individual models. Evolution has no explicit objective function; humans design RL's. But the designer sets only a broad, simple goal. The designer does not prescribe the specific paths. The human hand on the reward is light, and as the scale of iteration grows, our subjectivity gets diluted in the outcome. The pressure remains, and so does the complexity it produces.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v2.md → essay_v3.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream3_slop_round0_flagged_024",
+    "prose_in": "We wouldn't be designing it — we'd be setting a pressure in motion and letting it run.",
+    "context_before": "Not because we designed it, but because we set a pressure in motion and let it run.",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "pseudo_profound_fragments",
+        "evidence": "Researcher-audit says “pressure in motion” is mild pseudo-profound diction; this version also uses an em-dash."
+      }
+    ],
+    "gold_rewrite": "",
+    "regression_check": "Round 1 audit flagged the line-146 rewrite as still using “setting a pressure in motion and letting it run.”",
+    "source": {
+      "stream": "worktree_mined",
+      "path": "docs/review/ai_slop_audit.md",
+      "round": "round_01"
+    },
+    "label_quality": "medium",
+    "is_negative": true
+  },
+  {
+    "id": "stream3_r1_auditor_rejected_011",
+    "prose_in": "The crystal of human logic is not Logos. People built it, and it carries the flaws and insights we have committed to language. But it is the first artifact large enough to show us how we reason together.",
+    "context_before": "The crystal of human logic is not Logos. People built it. It carries the flaws and insights we have committed to language. But it is the first mirror large enough to show us the shape of how we reason together.",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "overused_transitions",
+        "evidence": "Adds “and” between sequential statements, replaces a load-bearing mirror metaphor with generic “artifact,” and drops “shape of how”."
+      }
+    ],
+    "gold_rewrite": "",
+    "regression_check": "Rejected in docs/review/round_01/inquisitor_review.md: mirror and shape threads are load-bearing; the “and” combine is sequential, not a logical pivot.",
+    "source": {
+      "stream": "worktree_mined",
+      "path": ".claude/worktrees/auditor-3631709-25083/docs/review/round_01/auditor_change_plan.md",
+      "round": "round_01"
+    },
+    "label_quality": "medium",
+    "is_negative": true
+  },
+  {
+    "id": "stream2_v2_to_v3_40",
+    "prose_in": "The mechanism of reinforcement learning is strikingly simple. The model has one objective: be better. Better at what? At achieving a reward signal. How to get there? No prescribed path. No human-designed strategy. Just iteration — millions of attempts, each one slightly adjusted based on what worked and what did not. The paths that improve the reward survive. The paths that do not are discarded. From this simple pressure, applied at sufficient scale, complex behavior emerges that no one designed and no one predicted.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (1 → 0)."
+      },
+      {
+        "pattern_id": "adverb_softener_intensifier",
+        "evidence": "Reduced softeners/intensifiers/adverb filler (1 → 0); removed just."
+      }
+    ],
+    "gold_rewrite": "Reinforcement learning runs on a simple loop. The model has one objective: achieve a reward signal. No one prescribes the path to it. The model takes millions of attempts, each one adjusted by what worked. Apply enough of this pressure, and the model develops behaviors no one designed or predicted.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v2.md → essay_v3.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v2_to_v3_24",
+    "prose_in": "Why are they there? Because the training data was produced by us. And we, as Arthur Schopenhauer observed with uncomfortable precision, are not purely logical beings. The Will — blind, irrational, striving — precedes the Intellect. We argue to win, not to discover truth. We deceive ourselves before we deceive others. Vanity overrides reason more reliably than any formal principle. All of this is in the training data. All of it is compressed into the model.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (2 → 0)."
+      },
+      {
+        "pattern_id": "pseudo_profound_fragments",
+        "evidence": "Reduced pseudo profound fragments signature (1 → 0)."
+      }
+    ],
+    "gold_rewrite": "Those tendencies are there because we made the training data, and we, as Arthur Schopenhauer observed, are not purely logical beings. The Will, blind and striving, precedes the Intellect. We argue to win, not to discover truth. We deceive ourselves before we deceive others. Vanity overrides reason more often than any formal principle does. The training data carries all of this. The model carries it forward.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v2.md → essay_v3.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v14_to_v15_40",
+    "prose_in": "If the distillation claim turns out to be partly true, the direction it points in is worth taking seriously, even though it's hard to see how far the direction goes. Mediation between human communities is worth doing for its own sake, regardless. Behind it sits a question I'm still working out — whether the structure of human reasoning, once it can be inspected, can be made stable enough to be corrected against something other than what humans happen to approve of.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (1 → 0)."
+      }
+    ],
+    "gold_rewrite": "If the distillation claim turns out to be partly true, the trajectory is worth taking seriously, even if how far it goes is unclear. Mediation between human communities is worth doing for its own sake, regardless. Behind it sits a question I'm still working out: whether the structure of human reasoning, once it can be inspected, can be made stable enough to be corrected against something other than what humans happen to approve of.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v14.md → essay_v15.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier3_ai_adverb_strikingly_simple",
+    "prose_in": "strikingly simple",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "adverb_softener_intensifier",
+        "evidence": "Tier 3 pass: AI-adverb strip."
+      }
+    ],
+    "gold_rewrite": "simple",
+    "regression_check": "Drop adverb; keep adjective.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:152-152",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v2_to_v3_26",
+    "prose_in": "This is what I mean when I say LLMs distill human logic. Not that they produce truth. Not that they are intelligent. But that the process of compressing all of human expression into a common geometric space extracts the skeleton of how we collectively think — and that skeleton, for all its imperfections, is the closest thing we have to a shared logical foundation.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (1 → 0)."
+      },
+      {
+        "pattern_id": "negative_listing_reveal",
+        "evidence": "Reduced not a not b not c but d signature (1 → 0)."
+      },
+      {
+        "pattern_id": "word_choice_meta_commentary",
+        "evidence": "Reduced meta commentary on word choice signature (2 → 0)."
+      }
+    ],
+    "gold_rewrite": "LLMs do not produce truth, and they are not intelligent. What they extract is the structure of how we collectively think: imperfect, but the closest shared logical foundation we have.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v2.md → essay_v3.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v16_to_v17_19",
+    "prose_in": "Two programmers who do not share a spoken language can read this function and agree on its behavior. They may rename the variables in their heads. They may pronounce the syntax differently. The loop, the queue, the visited set, and the reconstruction of the path remain visible. The reasoning is carried by structure.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "hedge_stack",
+        "evidence": "Reduced stacked hedging (2 → 1); removed may."
+      }
+    ],
+    "gold_rewrite": "Two programmers who don't share a spoken language can read this function and agree on what it does. They might rename the variables in their heads to fit how they think about graph traversal, but the loop, the queue, and the way the visited set gets used to reconstruct the path at the end are all visible in the code itself.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v16.md → essay_v17.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v14_to_v15_1",
+    "prose_in": "A few years ago I was trying to explain to my advisor what we mean in machine learning by \"model.\" He was a population ecologist. The kind he worked with was an equation — a deterministic part and a noise part, written down so that an effect in his data could be tested for significance. What I was training looked nothing like that on the page. It had millions of parameters, no closed form, and got judged on how well it predicted things it hadn't seen. The conversation went on for months, weekly, and the gap between what we each meant by \"model\" never quite closed. I'd read his papers and feel unable to articulate why his equations weren't a small case of what I worked with — which I kept being sure they were.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (2 → 0)."
+      }
+    ],
+    "gold_rewrite": "A few years ago I was trying to explain to my advisor what we mean in machine learning by \"model.\" He was a population ecologist. The kind of model he worked with was an equation: a deterministic part, a noise part, written down so an effect in his data could be tested for significance. What I was training looked nothing like that on the page. It had millions of parameters, no closed form, and was judged on how well it predicted things it hadn't seen. We met weekly for months and didn't close the gap. I'd read his papers and not be able to say why his equations weren't a special case of what I worked with. I was sure they were, and I couldn't show it.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v14.md → essay_v15.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v12_to_v13_46",
+    "prose_in": "In Heraclitus and the traditions that follow him, the Greek word *Logos* points toward an ordering principle — the intelligibility according to which things hang together, whether or not we understand it. I'm using the word with some care, not as theology smuggled into machine learning. It earns its keep here as a way of marking the gap between the way humans actually reason and whatever order our reasoning is trying, imperfectly, to reach.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (1 → 0)."
+      }
+    ],
+    "gold_rewrite": "The Greek word *Logos*, in Heraclitus and in the traditions that came after him, points toward an ordering principle: the intelligibility according to which things hang together, whether or not the people inside that order understand it. I am not trying to smuggle theology into a discussion about machine learning. I do think the older word names a useful gap, the gap between the way humans actually reason and whatever larger order our reasoning is, awkwardly, trying to reach.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v12.md → essay_v13.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v14_to_v15_21",
+    "prose_in": "The premise at the top is shared between the two communities. Two parallel paths run from the premise to different terminal goals. The disagreement is at the middle steps, where the two paths diverge from the shared starting point. With this picture in front of them, the parties can point at a specific node and disagree with it explicitly: \"I disagree with this step,\" or \"we agree up to here.\" Even the shared premise can be challenged — if either side thinks the grassland claim is wrong or incomplete, that challenge is now also a node.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (1 → 0)."
+      }
+    ],
+    "gold_rewrite": "The premise at the top is shared. Two paths run from it down to different terminal goals, with the disagreement showing up in the middle steps where the paths diverge. With this picture in front of them, the parties can point at a specific node and disagree with it explicitly: \"I disagree with this step,\" or \"we agree up to here.\" Even the shared premise can be challenged. If either side thinks the grassland claim is wrong or incomplete, that challenge becomes another node.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v14.md → essay_v15.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v11_to_v12_50",
+    "prose_in": "If such systems emerge, they would not simply mediate between existing communities. They might expose defects in the shared human embedding itself: places where all communities reason badly, places where our language makes a false path easy and a true path hard, places where desire has worn a groove so deep we call it common sense.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "adverb_softener_intensifier",
+        "evidence": "Reduced softeners/intensifiers/adverb filler (1 → 0); removed simply."
+      }
+    ],
+    "gold_rewrite": "If something like that did emerge, it would not only mediate between existing communities. It might surface defects in the shared human embedding itself: places where every community reasons badly, parts of language that make wrong paths easy, and grooves cut by desire deep enough to look like common sense.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v11.md → essay_v12.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier1_l102_delete",
+    "prose_in": "This is what I mean when I say LLMs distill human logic.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "word_choice_meta_commentary",
+        "evidence": "Reason: Third meta-commentary instance; move straight to content."
+      }
+    ],
+    "gold_rewrite": "",
+    "regression_check": "Delete; content loss ≈ 0 per Tier 1. No replacement.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:38-40",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v14_to_v15_34",
+    "prose_in": "The Greek word *Logos*, in Heraclitus and in the traditions that came after him, points toward an ordering principle: the intelligibility according to which things hang together, whether or not the people inside the order grasp the order. I'm not trying to smuggle theology into a discussion about machine learning here. I do think the older word marks a real gap — the gap between how humans actually reason and whatever broader order that reasoning is trying, with mixed success, to track.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (1 → 0)."
+      }
+    ],
+    "gold_rewrite": "The Greek word *Logos*, in Heraclitus and in the traditions that came after him, points toward an ordering principle: the intelligibility according to which things hang together, whether or not anyone inside is in a position to grasp it. I'm not trying to smuggle theology into a discussion about machine learning. The older word does mark a real gap, between how humans actually reason and whatever broader order that reasoning is trying, with mixed success, to track.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v14.md → essay_v15.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v10_to_v11_15",
+    "prose_in": "Two programmers who do not share a spoken language can read this function and agree on its behavior. They may name the variables differently. They may pronounce the syntax differently in their heads. The control flow is still there. The queue, the visited set, the loop, the return path: the reasoning is carried by structure.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "hedge_stack",
+        "evidence": "Reduced stacked hedging (2 → 1); removed may."
+      }
+    ],
+    "gold_rewrite": "Two programmers who do not share a spoken language can read this function and agree on its behavior. They may name the variables differently in their heads. The control flow is still there. The queue, the visited set, the loop, the return path: the reasoning is carried by structure.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v10.md → essay_v11.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v16_to_v17_4",
+    "prose_in": "Here is the wager. Natural language divides communities because meaning is local. Under that local surface runs a more general order: what follows from what, what premise leads to what action, what value is treated as final. Call that logic, not as formal proof, but as the shape of reasoning.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "not_x_but_y_reveal",
+        "evidence": "Reduced not x but y signature (1 → 0)."
+      }
+    ],
+    "gold_rewrite": "",
+    "regression_check": "Pure deletion item; deleted text matched a strong catalogued AI-tell signature.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v16.md → essay_v17.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier2_line102",
+    "prose_in": "Not that they produce truth. Not that they are intelligent. But that the process of compressing all of human expression into a common geometric space extracts the skeleton of how we collectively think — and that skeleton, for all its imperfections, is the closest thing we have to a shared logical foundation.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "negative_listing_reveal",
+        "evidence": "Checks: drops \"Not X. Not Y. But Z.\" inversion."
+      },
+      {
+        "pattern_id": "metaphor_overuse",
+        "evidence": "Checks: replaces skeleton with structure."
+      },
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Before uses em-dash near skeleton claim."
+      }
+    ],
+    "gold_rewrite": "LLMs do not produce truth. They are not intelligent. What they do is extract the structure of how we collectively think — imperfect, but the closest shared logical foundation we have.",
+    "regression_check": "All three claims preserved; flatter Robinson register.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:95-99",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v2_to_v3_35",
+    "prose_in": "Everything I have argued so far rests on a claim about human logic — that LLMs capture it, crystallize it, and can deploy it as a bridge between communities. But human logic is not the end of the story.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (1 → 0)."
+      }
+    ],
+    "gold_rewrite": "My argument so far rests on one claim about human logic. LLMs capture it, crystallize it, and serve as common ground between communities. Human logic is not where the story ends.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v2.md → essay_v3.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier1_l88_delete",
+    "prose_in": "I use 'logic' here deliberately, and I mean it broadly.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "word_choice_meta_commentary",
+        "evidence": "Reason: Pure meta-commentary; redundant with line 70 definition paragraph."
+      }
+    ],
+    "gold_rewrite": "",
+    "regression_check": "Delete; content loss ≈ 0 per Tier 1. No replacement.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:36-39",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream3_slop_round0_flagged_025",
+    "prose_in": "Logic does not end the argument. But it makes the argument legible — it shows the skeleton the rhetoric was dressing up.",
+    "context_before": "The logic does not resolve the conflict. But it makes the conflict *legible*. It strips away the noise and shows the bare architecture of disagreement.",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "metaphor_overuse",
+        "evidence": "The audit note itself warns “skeleton” would be the fourth bone/skeleton figure and says to find another word."
+      }
+    ],
+    "gold_rewrite": "",
+    "regression_check": "Round 1 audit warned that its own proposed rewrite reused the over-budget skeleton metaphor.",
+    "source": {
+      "stream": "worktree_mined",
+      "path": "docs/review/ai_slop_audit.md",
+      "round": "round_01"
+    },
+    "label_quality": "medium",
+    "is_negative": true
+  },
+  {
+    "id": "stream1_review_r01_auditor_l116_stranded_preposition",
+    "prose_in": "They give the parties a common geometry to compare reasoning in.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "vague_grand_abstraction",
+        "evidence": "Inquisitor kept geometry but fixed phrasing."
+      }
+    ],
+    "gold_rewrite": "They give the parties a common geometry for comparing their reasoning.",
+    "regression_check": "Applied modified edit preserves load-bearing geometry metaphor.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_report.md:52-55",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_16_l160_metaphor_pileup",
+    "prose_in": "The crystal of human logic is not Logos. People built it. It carries the flaws and insights we have committed to language. But it is the first mirror large enough to show us the shape of how we reason together.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "metaphor_overuse",
+        "evidence": "Rationale: mirror is fourth metaphor in crystal/skeleton-equivalent/mirror cluster."
+      },
+      {
+        "pattern_id": "vague_grand_abstraction",
+        "evidence": "Rationale: drops \"the shape of how\" genitive abstraction."
+      },
+      {
+        "pattern_id": "stripped_causal_connective",
+        "evidence": "Rationale: folds People built it / It carries to restore flow."
+      }
+    ],
+    "gold_rewrite": "The crystal of human logic is not Logos. People built it, and it carries the flaws and insights we have committed to language. But it is the first artifact large enough to show us how we reason together.",
+    "regression_check": "Uses concrete artifact; removes shape-of abstraction and metaphor pile-up.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:90-93",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r01_audit_line84_something_fix",
+    "prose_in": "Something new has been built that fits this description — though, like programming languages before it, nobody built it for this purpose.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "throat_clearing_openers",
+        "evidence": "Audit tag: SX."
+      },
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Audit tag: EM."
+      }
+    ],
+    "gold_rewrite": "A new tool fits this description — though, like programming languages, it wasn't built for this purpose.",
+    "regression_check": "Fix removes Something-X opener; keeps claim.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_01/researcher-audit_report.md:43-46",
+      "round": "slop_revision_round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v13_to_v14_19",
+    "prose_in": "A model trained on that archive isn't given a theory of logic. Its task is to predict the next token, and the question worth asking is what it has to learn in order to do that across many domains. To predict text reliably, the model has to absorb recurring relations between bits of language: the way questions tend to be followed by answers and premises by conclusions, the way definitions get tested against objections, the way explanations get rebuilt when something fails to hold up. Those relations are picked up statistically rather than philosophically, and what ends up encoded is a pattern in how reasoning, when it shows up in text at all, tends to be expressed.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "adverb_softener_intensifier",
+        "evidence": "Reduced softeners/intensifiers/adverb filler (1 → 0)."
+      }
+    ],
+    "gold_rewrite": "Training a language model is set up around a single objective: predict the next token. To meet that objective well, across the many domains the training data covers, the model has to internalize a substantial amount of how language fits together. The recurring relations are the ones that matter for prediction: questions are followed by answers, premises by conclusions, definitions get tested against objections, explanations get rebuilt when something in them fails to hold up. The model picks these relations up statistically, with no philosophical theory of inference attached, and what the training process leaves encoded is a set of patterns describing how reasoning tends to get expressed when it shows up in writing at all.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v13.md → essay_v14.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream3_r1_auditor_rejected_017",
+    "prose_in": "With small enough steps, the logic becomes readable to anyone.",
+    "context_before": "Define small enough steps, and the logic becomes simple and legible.",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "importance_inflation",
+        "evidence": "Replaces a mild doublet with broad “readable to anyone” universality."
+      }
+    ],
+    "gold_rewrite": "",
+    "regression_check": "Rejected in docs/review/round_01/inquisitor_review.md: optional micro-polish; after multiple rounds, mild doublets should not be re-litigated.",
+    "source": {
+      "stream": "worktree_mined",
+      "path": ".claude/worktrees/auditor-3631709-25083/docs/review/round_01/auditor_change_plan.md",
+      "round": "round_01"
+    },
+    "label_quality": "medium",
+    "is_negative": true
+  },
+  {
+    "id": "stream2_v12_to_v13_31",
+    "prose_in": "Same opening premise — grassland is finite. Two paths run in parallel below it, with the same three steps in each: premise, action, terminal goal. A reader from either side can now point at a node and say *I disagree with that step*, or *we agree up to here*.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (1 → 0)."
+      }
+    ],
+    "gold_rewrite": "The premise at the top is shared. The two paths run parallel below it, with the disagreement sitting on the second and third steps rather than at the premise itself. Once that picture is in front of the parties, a reader can point at a node and say *I disagree with this step* or *we agree up to here*, and even the question of whether grassland really is the shared premise becomes an explicit thing to argue about, instead of an assumption hidden inside the words.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v12.md → essay_v13.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v9_to_v10_5",
+    "prose_in": "Explaining this to engineers was its own job. They would suggest fixes — focal loss, oversampling, augmentation — that addressed parts of the problem but missed the part where the ecologist's frame of reference *is* the reasoning. Explaining it back to ecologists was the inverse job. I ended up writing a paper on long-tailed recognition that tried to formalize the gap. Most of the writing was translation. The science was the smaller fraction.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (2 → 0)."
+      }
+    ],
+    "gold_rewrite": "Engineers offered reasonable fixes: focal loss, oversampling, augmentation, better backbones. These helped parts of the problem. They missed the harder part. The ecologist's background knowledge was not extra metadata pasted onto the image; it was part of the reasoning process by which the image became identifiable. Explaining that took time. Explaining the machine-learning side back to ecologists took more. I eventually wrote a paper on long-tailed recognition that tried to formalize the gap. A large fraction of the writing was neither modeling nor ecology. It was the work of getting two communities to see the same problem.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v9.md → essay_v10.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_reviewer_l25_tense_backshift",
+    "prose_in": "He said he was observing the zebras, and they need protection.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "unclear_antecedent",
+        "evidence": "Bug type: said past + need present; indirect speech requires backshift."
+      }
+    ],
+    "gold_rewrite": "He said he was observing the zebras, and that they needed protection.",
+    "regression_check": "Applied fix makes indirect-clause boundary explicit and backshifts tense.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/reviewer_report.md:75-81",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream3_slop_round0_flagged_029",
+    "prose_in": "A better model is a cleaner crystal — but the crystal keeps the fingerprints of its source. It's human logic, not ideal logic; the people who made it were driven as much by will as by reason.",
+    "context_before": "The better the model, the cleaner the crystal. But the crystal will always carry the fingerprints of its source material — because it is human logic, not ideal logic, and the humans who produced it were driven by will as much as by reason.",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Still stacks crystal + fingerprints and adds an em-dash while trying to reduce aphorism."
+      }
+    ],
+    "gold_rewrite": "",
+    "regression_check": "Different-pattern regression candidate: removes one balance but keeps the extractive metaphor stack and dash rhythm the slop-revision reports warn about.",
+    "source": {
+      "stream": "worktree_mined",
+      "path": "docs/review/ai_slop_audit.md",
+      "round": "round_01"
+    },
+    "label_quality": "medium",
+    "is_negative": true
+  },
+  {
+    "id": "stream1_review_r01_reviewer_l21_doubled_it",
+    "prose_in": "a human mind can hold only so much, and it can hold it only through natural language.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "unclear_antecedent",
+        "evidence": "Bug type: first \"it\" = mind, second \"it\" = so much."
+      }
+    ],
+    "gold_rewrite": "a human mind can hold only so much, and only through natural language.",
+    "regression_check": "Applied verb-elision removes doubled pronoun while preserving capacity + medium constraints.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/reviewer_report.md:67-73",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v2_to_v3_7",
+    "prose_in": "Two groups of people. Face to face. Each with impeccable reasoning. Each arriving at the opposite conclusion. The biologist sees an ecosystem to be preserved. The warriors see a threat to their people's survival. Both are right, within their own frame. And yet the distance between them feels unbridgeable — not because they lack the words to speak to each other, but because the words they have cannot carry the full weight of what they mean.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (1 → 0)."
+      },
+      {
+        "pattern_id": "not_x_but_y_reveal",
+        "evidence": "Reduced not x but y signature (1 → 0)."
+      },
+      {
+        "pattern_id": "pseudo_profound_fragments",
+        "evidence": "Reduced pseudo profound fragments signature (1 → 0)."
+      }
+    ],
+    "gold_rewrite": "Two groups of people, face to face. Both reasoned carefully, and both arrived at opposite conclusions. The biologist sees an ecosystem to preserve. The warriors see a threat to their people's survival. Both are right inside their own frame. The distance between them feels unbridgeable. They have the words. But the words cannot carry the full weight of what they mean.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v2.md → essay_v3.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_slop_revision_r02_tier2_line96",
+    "prose_in": "These are not technical failures. They are human tendencies, faithfully compressed into the model.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "adverb_softener_intensifier",
+        "evidence": "Checks: \"faithfully\" is an AI-adverb."
+      }
+    ],
+    "gold_rewrite": "These are not engineering failures. They are human tendencies, compressed into the model.",
+    "regression_check": "Claim intact; one less AI-register word.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/research/slop_revision/round_02/researcher-plan_report.md:83-87",
+      "round": "slop_revision_round_02"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_15_l158_paired_anaphora",
+    "prose_in": "We have been sleeping. We are trapped inside our separate languages and disciplines, each of us taking the vocabulary of our community for the structure of the world. The biologist and the warrior wake into different worlds. The ecologist and the engineer do too.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "anaphora_repetition",
+        "evidence": "Rationale: biologist/warrior then ecologist/engineer paired rhythm."
+      }
+    ],
+    "gold_rewrite": "We have been sleeping, trapped inside our separate languages and disciplines, each of us taking the vocabulary of our community for the structure of the world. The biologist and the warrior wake into different worlds, and so do the ecologist and the engineer.",
+    "regression_check": "Keeps parallel without do-too tag; softens staccato opener.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:85-88",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v2_to_v3_27",
+    "prose_in": "The evaluation of a large language model, then, is essentially an evaluation of how effectively it distills human logic from the mine of human logic. The better the model, the cleaner the crystal. But the crystal will always carry the fingerprints of its source material — because it is human logic, not ideal logic, and the humans who produced it were driven by will as much as by reason.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (1 → 0)."
+      }
+    ],
+    "gold_rewrite": "To evaluate a large language model is to evaluate how well it distills human logic from the archive. The better the model, the clearer the crystal. The crystal still carries the marks of its source. It is human logic, not ideal logic, and the humans who produced it acted as much from will as from reason.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v2.md → essay_v3.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v4_to_v5_15",
+    "prose_in": "The lesson cuts in the same direction whether the diagram is right or wrong. The model is a mirror for whatever structure your prompt actually contains. If your reasoning has an unstated branch, the diagram will not have that branch. Used carefully, this is the feature, not the bug. It forces you to make the structure explicit before you communicate it.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "unvaried_sentence_rhythm",
+        "evidence": "Broke uniform sentence cadence; old lengths [14, 12, 14, 9, 12], rewrite lengths [15, 14, 9, 12]."
+      }
+    ],
+    "gold_rewrite": "Right or wrong, the diagram is a mirror of the structure your prompt actually contains. If your reasoning has an unstated branch, the diagram will not have that branch. Used carefully, this is the feature, not the bug. The translation happens at the level of explicit structure, not implicit vocabulary.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v4.md → essay_v5.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v19_to_v20_23",
+    "prose_in": "That much is technical. What follows from it, for the present argument, depends on a conditional which I would rather state plainly than try to smuggle past the reader. If training has only memorised surface co-occurrences between words, the model is a parrot, and most of the rest of this essay collapses. If, instead, training has actually picked up durable patterns in how humans express their reasoning, what's been built is an instrument of a kind that didn't exist before. The systems we currently have do not let us pick cleanly between those two readings. Outputs are uneven: some look clearly like memorisation, others clearly don't, and a large stretch in the middle has no clean test. The same prompt run twice can produce a useful argument map on Monday and, on Wednesday, a smoother version that has quietly dropped a premise the rest of the structure was meant to rest on. The current models hallucinate, flatter their users, and offer confident wrong answers rather than admitting they don't know. None of these failures, taken on its own, settles the larger question.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "adverb_softener_intensifier",
+        "evidence": "Reduced softeners/intensifiers/adverb filler (7 → 6)."
+      }
+    ],
+    "gold_rewrite": "That much is technical. What follows depends on a conditional I would rather state plainly than smuggle past the reader. If training has only memorised surface co-occurrences between words, the model is a parrot, and most of the rest of this essay collapses. If training has actually picked up durable patterns in how humans express their reasoning, what has been built is an instrument of a kind that did not exist before. The systems we currently have do not let us pick cleanly between those two readings. Outputs are uneven: some look like memorisation, others clearly do not, and a large stretch in the middle has no clean test. The same prompt run twice can produce a useful argument map on Monday and, on Wednesday, a smoother version that has quietly dropped a premise the rest of the structure was meant to rest on. Current models hallucinate, flatter their users, and offer confident wrong answers rather than admit they do not know. None of these failures, taken on its own, settles the larger question.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v19.md → essay_v20.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_change_plan_05_l98_parallel_anaphora",
+    "prose_in": "It argues with more confidence than the evidence warrants, agrees with whoever is talking to it, reaches for a plausible answer instead of saying 'I don't know,' and defends conclusions we already hold while ignoring arguments that lead somewhere uncomfortable.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "anaphora_repetition",
+        "evidence": "Rationale: four perfectly matched verb-clauses of similar length is architectural-symmetry tell."
+      }
+    ],
+    "gold_rewrite": "It argues with more confidence than the evidence warrants. It agrees with whoever is talking to it. It reaches for a plausible answer instead of admitting it does not know. And it defends conclusions we already hold rather than follow an argument somewhere uncomfortable.",
+    "regression_check": "Splits into separate sentences and varies clause length; rejected adding duplicate \"because we do\" tail.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_change_plan.md:34-37",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream1_review_r01_auditor_l76_philosophical_program",
+    "prose_in": "Their grammar grew bottom-up out of need, not from philosophical decree.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "importance_inflation",
+        "evidence": "Rationale: \"decree\" reads dramatized/TED-flavored."
+      }
+    ],
+    "gold_rewrite": "Their grammar grew bottom-up out of need, not from a philosophical program.",
+    "regression_check": "Applied edit; more accurate and less stagey.",
+    "source": {
+      "stream": "hand_labeled",
+      "path": "docs/review/round_01/auditor_report.md:32-35",
+      "round": "round_01"
+    },
+    "label_quality": "high",
+    "is_negative": false
+  },
+  {
+    "id": "stream2_v13_to_v14_33",
+    "prose_in": "My first instinct was to blame the model. The fault was on my end. I had typed the phrase \"active learning\" and assumed the rest of what I knew about the pipeline would come along with the phrase. The model had given me the textbook shape of an active-learning loop, which is what my prompt actually implied. When I went back and described the bypass — named the confidence threshold, gave each step its own input and output — the diagram came back the way I had meant it.",
+    "context_before": "",
+    "context_after": "",
+    "banned_patterns": [
+      {
+        "pattern_id": "em_dash_overuse",
+        "evidence": "Reduced em-dash cadence (2 → 1)."
+      }
+    ],
+    "gold_rewrite": "My first instinct was to blame the model. The actual problem, looking back, was upstream of the model — in the prompt I'd written. The phrase \"active learning\" was sitting in my prompt, and I'd assumed the rest of the pipeline I was carrying in my head would travel along with the phrase. What I got back was the textbook shape implied by the phrase, since the textbook shape was the only thing my prompt actually contained. When I went back and described the bypass explicitly, with the confidence threshold named and the inputs and outputs of each step specified, the diagram came back the way I'd meant.",
+    "regression_check": "Gold rewrite checked against catalogued high-salience tells; no different named tell introduced.",
+    "source": {
+      "stream": "auto_diff",
+      "path": "essay_v13.md → essay_v14.md",
+      "round": null
+    },
+    "label_quality": "medium",
+    "is_negative": false
+  }
+]
