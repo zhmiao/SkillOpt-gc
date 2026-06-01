@@ -19,6 +19,7 @@ Public API
 - :func:`run_success_analyst_minibatch` -- one optimizer call for a group of successes
 - :func:`run_minibatch_reflect`         -- full reflect stage dispatcher
 """
+
 from __future__ import annotations
 
 import json
@@ -33,13 +34,11 @@ from skillopt.optimizer.update_modes import (
     get_payload_items,
     is_full_rewrite_minibatch_mode,
     normalize_update_mode,
-    payload_key,
     payload_label,
     truncate_payload,
 )
 from skillopt.prompts import load_prompt
 from skillopt.utils import extract_json
-
 
 # ── Trajectory formatting ────────────────────────────────────────────────────
 
@@ -155,10 +154,7 @@ def fmt_minibatch_trajectories(
 
         reference_text = str(item.get("reference_text") or "").strip()
         if reference_text:
-            header += (
-                f"\n#### Hidden Reference\n"
-                f"{reference_text[:4000]}\n"
-            )
+            header += f"\n#### Hidden Reference\n{reference_text[:4000]}\n"
 
         # ── Append target context (what the agent saw) ──────────────
         target_prompt = item.get("target_system_prompt", "")
@@ -168,10 +164,7 @@ def fmt_minibatch_trajectories(
                 with open(prompt_path) as f:
                     target_prompt = f.read()
         if target_prompt:
-            header += (
-                f"\n#### Target System Prompt\n"
-                f"{target_prompt[:3000]}\n"
-            )
+            header += f"\n#### Target System Prompt\n{target_prompt[:3000]}\n"
 
         user_prompt = item.get("target_user_prompt", "")
         if not user_prompt:
@@ -180,10 +173,7 @@ def fmt_minibatch_trajectories(
                 with open(user_prompt_path) as f:
                     user_prompt = f.read()
         if user_prompt:
-            header += (
-                f"\n#### Target User Prompt\n"
-                f"{user_prompt[:3000]}\n"
-            )
+            header += f"\n#### Target User Prompt\n{user_prompt[:3000]}\n"
 
         if os.environ.get("REFLACT_CODEX_TRACE_TO_OPTIMIZER", "0") == "1":
             codex_trace_summary = item.get("codex_trace_summary", "")
@@ -193,17 +183,11 @@ def fmt_minibatch_trajectories(
                     with open(codex_trace_summary_path) as f:
                         codex_trace_summary = f.read()
             if codex_trace_summary:
-                header += (
-                    f"\n#### Codex Trace Summary\n"
-                    f"{codex_trace_summary}\n"
-                )
+                header += f"\n#### Codex Trace Summary\n{codex_trace_summary}\n"
 
         codex_probe_trace_steps = str(item.get("codex_probe_trace_steps") or "").strip()
         if codex_probe_trace_steps:
-            header += (
-                f"\n#### Codex Trace Steps\n"
-                f"{codex_probe_trace_steps}\n"
-            )
+            header += f"\n#### Codex Trace Steps\n{codex_probe_trace_steps}\n"
 
         preview = item.get("spreadsheet_preview", "")
         if not preview:
@@ -212,10 +196,7 @@ def fmt_minibatch_trajectories(
                 with open(preview_path) as f:
                     preview = f.read()
         if preview:
-            header += (
-                f"\n#### Spreadsheet Preview\n"
-                f"{preview[:3000]}\n"
-            )
+            header += f"\n#### Spreadsheet Preview\n{preview[:3000]}\n"
 
         parts.append(header + "\n" + traj_text)
 
@@ -295,19 +276,16 @@ def run_error_analyst_minibatch(
     if not trajectories_text.strip():
         return None
 
-    user = (
-        f"## Current Skill\n{skill_content}\n\n"
-    )
+    user = f"## Current Skill\n{skill_content}\n\n"
     if is_full_rewrite_minibatch_mode(mode):
         user += (
-            f"## Update Format\n"
-            f"Produce one complete replacement skill candidate for this minibatch. "
-            f"Do not output edits, patches, or revise suggestions.\n\n"
+            "## Update Format\n"
+            "Produce one complete replacement skill candidate for this minibatch. "
+            "Do not output edits, patches, or revise suggestions.\n\n"
         )
     else:
         user += (
-            f"## {payload_label(mode, title=True)} Budget\n"
-            f"Produce at most L={edit_budget} {payload_label(mode)}.\n\n"
+            f"## {payload_label(mode, title=True)} Budget\nProduce at most L={edit_budget} {payload_label(mode)}.\n\n"
         )
     # Unified step buffer context (preferred)
     ctx = step_buffer_context or rejection_context or ""
@@ -322,17 +300,36 @@ def run_error_analyst_minibatch(
 
     try:
         response, _ = chat_optimizer(
-            system=actual_system, user=user,
+            system=actual_system,
+            user=user,
             max_completion_tokens=64000 if is_full_rewrite_minibatch_mode(mode) else 4096,
             retries=3,
             stage="analyst",
         )
+        # Diagnostic: persist the raw analyst response so we can audit
+        # why a minibatch produced 0 edits (the most common failure mode
+        # surfaced in the 2026-06-01 Copilot-only dry run).
+        try:
+            os.makedirs(prediction_dir, exist_ok=True)
+            with open(os.path.join(prediction_dir, "analyst_error_raw.txt"), "w", encoding="utf-8") as f:
+                f.write(response)
+        except Exception:  # noqa: BLE001
+            pass
         result = extract_json(response)
         if result and "patch" in result:
             result["source_type"] = "failure"
             if not is_full_rewrite_minibatch_mode(mode):
                 truncate_payload(result["patch"], edit_budget, mode)
             return result
+        # Emit a one-line diagnostic so 0-edit outcomes are debuggable from the log
+        if result is None:
+            print(
+                f"    [analyst error] extract_json returned None for response of {len(response)} chars; raw saved to {prediction_dir}/analyst_error_raw.txt"
+            )
+        elif "patch" not in result:
+            print(
+                f"    [analyst error] response parsed but has no 'patch' key (top keys: {list(result.keys())}); raw saved to {prediction_dir}/analyst_error_raw.txt"
+            )
     except Exception:  # noqa: BLE001
         traceback.print_exc()
     return None
@@ -373,19 +370,16 @@ def run_success_analyst_minibatch(
     if not trajectories_text.strip():
         return None
 
-    user = (
-        f"## Current Skill\n{skill_content}\n\n"
-    )
+    user = f"## Current Skill\n{skill_content}\n\n"
     if is_full_rewrite_minibatch_mode(mode):
         user += (
-            f"## Update Format\n"
-            f"Produce one complete replacement skill candidate for this minibatch. "
-            f"Do not output edits, patches, or revise suggestions.\n\n"
+            "## Update Format\n"
+            "Produce one complete replacement skill candidate for this minibatch. "
+            "Do not output edits, patches, or revise suggestions.\n\n"
         )
     else:
         user += (
-            f"## {payload_label(mode, title=True)} Budget\n"
-            f"Produce at most L={edit_budget} {payload_label(mode)}.\n\n"
+            f"## {payload_label(mode, title=True)} Budget\nProduce at most L={edit_budget} {payload_label(mode)}.\n\n"
         )
     ctx = step_buffer_context or trajectory_memory_context or ""
     if ctx.strip():
@@ -397,7 +391,8 @@ def run_success_analyst_minibatch(
 
     try:
         response, _ = chat_optimizer(
-            system=actual_system, user=user,
+            system=actual_system,
+            user=user,
             max_completion_tokens=64000 if is_full_rewrite_minibatch_mode(mode) else 4096,
             retries=3,
             stage="analyst",
@@ -533,7 +528,9 @@ def run_minibatch_reflect(
     # ── Worker functions ──────────────────────────────────────────────────
     def _do_fail(idx: int, batch: list[dict]) -> tuple[str, dict | None]:
         patch = run_error_analyst_minibatch(
-            skill_content, batch, prediction_dir,
+            skill_content,
+            batch,
+            prediction_dir,
             edit_budget=edit_budget,
             system_prompt=error_system,
             step_buffer_context=step_buffer_context,
@@ -547,7 +544,9 @@ def run_minibatch_reflect(
 
     def _do_succ(idx: int, batch: list[dict]) -> tuple[str, dict | None]:
         patch = run_success_analyst_minibatch(
-            skill_content, batch, prediction_dir,
+            skill_content,
+            batch,
+            prediction_dir,
             edit_budget=edit_budget,
             system_prompt=success_system,
             step_buffer_context=step_buffer_context,
@@ -558,10 +557,9 @@ def run_minibatch_reflect(
         return f"minibatch_succ_{idx:03d}", patch
 
     # Run all pending minibatches in parallel
-    all_pending = (
-        [("fail", idx, batch) for idx, batch in pending_fail]
-        + [("succ", idx, batch) for idx, batch in pending_succ]
-    )
+    all_pending = [("fail", idx, batch) for idx, batch in pending_fail] + [
+        ("succ", idx, batch) for idx, batch in pending_succ
+    ]
 
     with ThreadPoolExecutor(max_workers=workers) as ex:
         futs = {}

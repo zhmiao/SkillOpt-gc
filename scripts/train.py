@@ -171,6 +171,10 @@ def parse_args() -> argparse.Namespace:
             "qwen_chat",
             "minimax",
             "minimax_chat",
+            "copilot",
+            "copilot_cli",
+            "copilot_cli_exec",
+            "github_copilot",
         ],
     )
     p.add_argument("--optimizer_model", type=str)
@@ -227,6 +231,12 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--claude_code_exec_use_sdk", type=str)
     p.add_argument("--claude_code_exec_effort", type=str)
     p.add_argument("--claude_code_exec_max_thinking_tokens", type=int)
+    p.add_argument("--copilot_cli_exec_path", type=str)
+    p.add_argument("--copilot_cli_exec_effort", type=str)
+    p.add_argument("--copilot_cli_exec_allow_all_tools", type=_BOOL)
+    p.add_argument("--copilot_cli_exec_allow_all_paths", type=_BOOL)
+    p.add_argument("--copilot_cli_exec_allow_all_urls", type=_BOOL)
+    p.add_argument("--copilot_cli_exec_agent", type=str)
     p.add_argument("--codex_trace_to_optimizer", type=_BOOL)
     p.add_argument("--skill_init", type=str)
     p.add_argument("--num_epochs", type=int)
@@ -348,6 +358,12 @@ _LEGACY_TO_STRUCTURED: dict[str, str] = {
     "claude_code_exec_use_sdk": "model.claude_code_exec_use_sdk",
     "claude_code_exec_effort": "model.claude_code_exec_effort",
     "claude_code_exec_max_thinking_tokens": "model.claude_code_exec_max_thinking_tokens",
+    "copilot_cli_exec_path": "model.copilot_cli_exec_path",
+    "copilot_cli_exec_effort": "model.copilot_cli_exec_effort",
+    "copilot_cli_exec_allow_all_tools": "model.copilot_cli_exec_allow_all_tools",
+    "copilot_cli_exec_allow_all_paths": "model.copilot_cli_exec_allow_all_paths",
+    "copilot_cli_exec_allow_all_urls": "model.copilot_cli_exec_allow_all_urls",
+    "copilot_cli_exec_agent": "model.copilot_cli_exec_agent",
     "codex_trace_to_optimizer": "model.codex_trace_to_optimizer",
     "num_epochs": "train.num_epochs",
     "train_size": "train.train_size",

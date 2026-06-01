@@ -102,13 +102,25 @@ class StopSlopAdapter(EnvAdapter):
         **kwargs,
     ) -> list[dict]:
         items: list[dict] = env_manager
-        # Pull the active target deployment from the model package's runtime state.
+        # Pull the active target deployment from the openai backend module's
+        # runtime state (populated by set_target_deployment via the trainer /
+        # eval_only wiring). For the Copilot-only path this is still the
+        # canonical source of truth — set_target_deployment fans out to
+        # every backend module on its way through.
         from skillopt.model import azure_openai as _llm
-        from skillopt.model.backend_config import (
-            TARGET_DEPLOYMENT_NAME_FALLBACK,  # noqa: F401  (lazy import keeps unit tests light)
-        )
 
         target_model = getattr(_llm, "TARGET_DEPLOYMENT", "") or ""
+        return run_batch(
+            items=items,
+            out_root=out_dir,
+            skill_content=skill_content,
+            catalog_path=self.catalog_path,
+            target_model=target_model,
+            exec_timeout=self.exec_timeout,
+            max_completion_tokens=self.max_completion_tokens,
+            workers=self.workers,
+            judge_cache=self.judge_cache,
+        )
         return run_batch(
             items=items,
             out_root=out_dir,

@@ -59,6 +59,58 @@ def build_user(item: dict) -> str:
 _REWRITE_RE = re.compile(r"<rewrite>(.*?)</rewrite>", re.DOTALL | re.IGNORECASE)
 
 
+def _write_conversation(
+    pred_dir: str,
+    *,
+    item: dict,
+    rewrite: str,
+    graded,
+    raw_response: str,
+) -> None:
+    """Persist the per-item conversation in the format the reflect stage expects.
+
+    ``skillopt.gradient.reflect.fmt_minibatch_trajectories`` looks for
+    ``<prediction_dir>/<id>/conversation.json``; if the file is missing,
+    the formatter silently skips the item, which propagates as "0 edits"
+    out of the analyst with no diagnostic. Writing this file (even when
+    the rollout failed) keeps the analyst's view of the batch complete.
+
+    The conversation is rendered as a tool-call-style list (one
+    ``"tool_call"`` per rollout: ``cmd`` = the prose to rewrite,
+    ``obs`` = the rewrite the target produced). The reflect formatter
+    handles this shape natively.
+    """
+    prose_in = (item.get("prose_in") or "").strip()
+    gold = (item.get("gold_rewrite") or "").strip()
+    diag_text = ""
+    if graded is not None:
+        diag = graded.diagnostics or {}
+        diag_text = (
+            f"hard={graded.hard}  soft={graded.soft:.3f}  mode={diag.get('mode')}\n"
+            f"input_tags={diag.get('input_tags')}\n"
+            f"rewrite_hits={diag.get('rewrite_hits')}\n"
+            f"still_present={diag.get('still_present')}\n"
+            f"new_patterns={diag.get('new_patterns')}\n"
+        )
+    obs_parts = [f"<rewrite>\n{rewrite}\n</rewrite>"] if rewrite else ["<rewrite></rewrite> (no tag returned)"]
+    if diag_text:
+        obs_parts.append(f"[grader diagnostics]\n{diag_text}")
+    if gold:
+        obs_parts.append(f"[gold rewrite]\n{gold}")
+    conversation = [
+        {
+            "type": "tool_call",
+            "cmd": f"rewrite_prose:\n{prose_in}",
+            "obs": "\n\n".join(obs_parts),
+        }
+    ]
+    try:
+        with open(os.path.join(pred_dir, "conversation.json"), "w", encoding="utf-8") as f:
+            json.dump(conversation, f, indent=2, ensure_ascii=False)
+    except Exception:  # noqa: BLE001
+        pass
+
+
 def extract_rewrite(response: str) -> tuple[str, bool]:
     """Pull the rewrite text out of ``<rewrite>...</rewrite>`` tags.
 
@@ -84,6 +136,13 @@ def extract_rewrite(response: str) -> tuple[str, bool]:
 
 
 def _run_exec_once(*, pred_dir: str, skill_content: str, item: dict, model: str, timeout: int) -> tuple[str, str]:
+    """Legacy workspace-based exec path (kept for codex_exec / claude_code_exec).
+
+    Writes task + skill to disk and tells the agent to read them. Suitable
+    for agentic harnesses where the model is expected to use file-IO tools.
+    Stop-slop now prefers :func:`_run_inline_copilot_once` for copilot_cli_exec
+    because workspace exploration cost ~13% of rollouts in the dry run.
+    """
     task_text = build_user(item)
     skill_md = render_skill_md(
         skill_content,
@@ -107,6 +166,64 @@ def _run_exec_once(*, pred_dir: str, skill_content: str, item: dict, model: str,
         timeout=timeout,
     )
     return response or raw, raw
+
+
+def _run_inline_copilot_once(
+    *,
+    pred_dir: str,
+    skill_content: str,
+    item: dict,
+    model: str,
+    timeout: int,
+) -> tuple[str, str]:
+    """Pure-text rewrite via Copilot CLI with tools disabled.
+
+    Embeds the skill and the input prose directly into the prompt and
+    calls ``run_copilot_cli_exec`` with ``available_tools=""`` and
+    ``raw_prompt=True``. This bypasses the workspace-file approach used
+    by :func:`_run_exec_once` and the target-side wrapper added by
+    ``_exec_prompt``, eliminating the tool-exploration failure mode
+    that produced ``no_rewrite_tag_in_response`` results in the
+    2026-06-01 dry run.
+    """
+    import tempfile
+
+    from skillopt.model.codex_harness import run_copilot_cli_exec
+
+    system = build_system(skill_content)
+    user = build_user(item)
+    prompt = (
+        "# System\n"
+        + system
+        + "\n\n# User\n"
+        + user
+        + "\n\n# Output\n"
+        + "Return only the rewrite inside <rewrite>...</rewrite> tags. "
+        + "No commentary, no markdown fences, no headings. Do not call any tools."
+    )
+    with tempfile.TemporaryDirectory(prefix="skillopt_stop_slop_") as work_dir:
+        # work_dir is empty, available_tools='' disables tools, raw_prompt=True
+        # bypasses the target-side workspace wrapper. Persistence of the raw
+        # transcript happens inside run_copilot_cli_exec.
+        response, raw = run_copilot_cli_exec(
+            work_dir=work_dir,
+            prompt=prompt,
+            model=model,
+            timeout=timeout,
+            available_tools="",
+            raw_prompt=True,
+        )
+        # The original pred_dir is where downstream code looks for artifacts;
+        # copy the trace there for parity with _run_exec_once's persistence.
+        try:
+            os.makedirs(pred_dir, exist_ok=True)
+            with open(os.path.join(pred_dir, "copilot_inline_raw.txt"), "w", encoding="utf-8") as f:
+                f.write(raw)
+            with open(os.path.join(pred_dir, "copilot_inline_response.txt"), "w", encoding="utf-8") as f:
+                f.write(response)
+        except Exception:  # noqa: BLE001
+            pass
+    return response, raw
 
 
 # ── Per-item rollout ────────────────────────────────────────────────────────
@@ -144,13 +261,29 @@ def process_one(
 
     try:
         if is_target_exec_backend():
-            response, raw = _run_exec_once(
-                pred_dir=pred_dir,
-                skill_content=skill_content,
-                item=item,
-                model=target_model,
-                timeout=exec_timeout,
-            )
+            # Prefer the inline-prompt path for Copilot CLI: pure-text
+            # rewrites don't need workspace exploration, and bypassing the
+            # workspace + the target-side prompt wrapper eliminates the
+            # ~13% "no_rewrite_tag_in_response" failures observed in the
+            # 2026-06-01 dry run (model spending its budget on shell tools).
+            from skillopt.model.backend_config import get_target_backend
+
+            if get_target_backend() == "copilot_cli_exec":
+                response, raw = _run_inline_copilot_once(
+                    pred_dir=pred_dir,
+                    skill_content=skill_content,
+                    item=item,
+                    model=target_model,
+                    timeout=exec_timeout,
+                )
+            else:
+                response, raw = _run_exec_once(
+                    pred_dir=pred_dir,
+                    skill_content=skill_content,
+                    item=item,
+                    model=target_model,
+                    timeout=exec_timeout,
+                )
         else:
             system = build_system(skill_content)
             user = build_user(item)
@@ -184,6 +317,7 @@ def process_one(
                     indent=2,
                     ensure_ascii=False,
                 )
+            _write_conversation(pred_dir, item=item, rewrite="", graded=None, raw_response=raw)
             return result
 
         graded = grade(rewrite, item, catalog, judge_fn, judge_cache)
@@ -211,6 +345,7 @@ def process_one(
                 indent=2,
                 ensure_ascii=False,
             )
+        _write_conversation(pred_dir, item=item, rewrite=rewrite, graded=graded, raw_response=raw)
     except Exception as exc:  # noqa: BLE001
         result["fail_reason"] = f"{type(exc).__name__}: {exc}"
         result["extras"] = {"traceback": traceback.format_exc()[:4000]}
