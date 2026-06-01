@@ -18,6 +18,11 @@ from skillopt.model.backend_config import (
     get_copilot_cli_exec_config,
     get_target_backend,
 )
+from skillopt.model.common import (
+    CompatAssistantMessage,
+    CompatToolCall,
+    CompatToolFunction,
+)
 
 ANSWER_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -1124,6 +1129,8 @@ def _run_copilot_cli_exec(
     images: list[str] | None = None,
     data_dirs: list[str] | None = None,
     allow_file_edits: bool = False,
+    available_tools: str | None = None,
+    raw_prompt: bool = False,
 ) -> tuple[str, str]:
     """One non-interactive ``copilot -p`` invocation. Returns (response, raw_log).
 
@@ -1131,12 +1138,25 @@ def _run_copilot_cli_exec(
     ``--cwd`` flag, so we ``cd`` via ``subprocess.run(cwd=work_dir)`` and
     additionally pass ``--add-dir work_dir`` so the agent has explicit path
     permission.
+
+    ``available_tools``: when not None, passed verbatim to copilot's
+    ``--available-tools=<value>``. Pass an empty string ("") to disable
+    every tool — used by optimizer-side calls where the model should
+    answer in pure-text mode without exploring the workspace.
+
+    ``raw_prompt``: when True, skip the target-side ``_exec_prompt``
+    wrapper (which tells the model to read ``task.md`` /
+    ``.agents/skills/skillopt-target/SKILL.md`` — files that only
+    exist when :func:`prepare_workspace` set them up). Optimizer-side
+    calls pass ``raw_prompt=True`` so the prompt reaches the model
+    verbatim.
     """
     config = get_copilot_cli_exec_config()
+    final_prompt = prompt if raw_prompt else _exec_prompt(prompt, allow_file_edits=allow_file_edits)
     cmd: list[str] = [
         str(config["path"]),
         "-p",
-        _exec_prompt(prompt, allow_file_edits=allow_file_edits),
+        final_prompt,
         "--add-dir",
         _validate_exec_path(work_dir),
         "--no-color",
@@ -1147,6 +1167,8 @@ def _run_copilot_cli_exec(
         cmd.append("--allow-all-paths")
     if config.get("allow_all_urls", False):
         cmd.append("--allow-all-urls")
+    if available_tools is not None:
+        cmd.append(f"--available-tools={available_tools}")
     effort = _claude_effort(config.get("effort"))
     if effort:
         cmd.extend(["--effort", effort])
@@ -1198,6 +1220,8 @@ def run_copilot_cli_exec(
     images: list[str] | None = None,
     data_dirs: list[str] | None = None,
     allow_file_edits: bool = False,
+    available_tools: str | None = None,
+    raw_prompt: bool = False,
 ) -> tuple[str, str]:
     """Run a Copilot CLI rollout with empty-response retries.
 
@@ -1206,6 +1230,11 @@ def run_copilot_cli_exec(
     ``EXEC_EMPTY_RESPONSE_RETRIES`` times if the CLI returns an empty
     assistant message. Persists raw + summary under
     ``<work_dir>/../copilot_raw.txt`` and ``copilot_trace_summary.txt``.
+
+    ``available_tools`` and ``raw_prompt`` are forwarded to
+    :func:`_run_copilot_cli_exec`; pass ``available_tools=""`` and
+    ``raw_prompt=True`` for optimizer-side pure-reasoning calls (no
+    tool exploration, no target-side prompt wrapper).
 
     Note: Copilot CLI does not ship an SDK as of v1.0.57. If an SDK
     becomes available, mirror the ``use_sdk`` knob from
@@ -1217,7 +1246,7 @@ def run_copilot_cli_exec(
     all_raw: list[str] = []
 
     for attempt in range(retries + 1):
-        attempt_prompt = _retry_prompt(prompt, attempt)
+        attempt_prompt = _retry_prompt(prompt, attempt) if not raw_prompt else prompt
         response, raw = _run_copilot_cli_exec(
             work_dir=work_dir,
             prompt=attempt_prompt,
@@ -1226,6 +1255,8 @@ def run_copilot_cli_exec(
             images=images,
             data_dirs=data_dirs,
             allow_file_edits=allow_file_edits,
+            available_tools=available_tools,
+            raw_prompt=raw_prompt,
         )
         all_raw.append(f"===== COPILOT CLI ATTEMPT {attempt + 1} =====\n{raw}")
         last_response = response
@@ -1237,3 +1268,264 @@ def run_copilot_cli_exec(
     combined = "\n\n".join(all_raw)
     _persist_copilot_artifacts(work_dir, combined, last_response)
     return last_response, combined
+
+
+# ── Copilot CLI as the OPTIMIZER backend (COPILOT-2) ────────────────────────
+#
+# Same subprocess infrastructure as run_copilot_cli_exec, but exposes the
+# (system, user) -> response shape that skillopt.model.__init__.chat_optimizer
+# dispatches into. Token accounting is best-effort zeros — Copilot CLI does
+# print token counts to stderr ("Tokens ↑ 73.4k • ↓ 6") but the format is
+# unstable and not worth parsing for tracker accuracy.
+#
+# The chat_optimizer_messages_via_copilot variant is a passthrough/serializer:
+# no business-logic caller uses it today (verified by grep over skillopt/) but
+# it stays implementable for future tool-call callers. For now it concatenates
+# the message list into a single prompt and parses any well-formed
+# {"tool_calls": [...]} JSON the model emits.
+
+
+def _import_tempfile():
+    """Lazy import (kept local so module load stays cheap)."""
+    import tempfile
+
+    return tempfile
+
+
+def _import_tracker():
+    from skillopt.model.common import tracker
+
+    return tracker
+
+
+def _zero_usage() -> dict[str, int]:
+    return {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+
+
+def chat_optimizer_via_copilot(
+    *,
+    system: str,
+    user: str,
+    max_completion_tokens: int = 16384,  # noqa: ARG001 — accepted for API parity
+    retries: int = 5,  # noqa: ARG001 — retries handled inside run_copilot_cli_exec
+    stage: str = "optimizer",
+    timeout: int | None = None,
+) -> tuple[str, dict[str, int]]:
+    """Single ``chat_optimizer``-style call routed through Copilot CLI.
+
+    Concatenates ``system`` and ``user`` into one ``-p`` prompt and invokes
+    ``run_copilot_cli_exec`` against an ephemeral working directory.
+    Token usage is reported as zeros (see module docstring).
+    """
+    tempfile = _import_tempfile()
+    config = get_copilot_cli_exec_config()
+    tracker = _import_tracker()
+
+    prompt_parts: list[str] = []
+    if system and system.strip():
+        prompt_parts.append("# System\n" + system.strip())
+    prompt_parts.append("# User\n" + (user or "").strip())
+    prompt_parts.append(
+        "# Output\nReturn only your response as plain text. Do not echo the "
+        "system or user blocks. Do not wrap in markdown fences unless explicitly "
+        "asked."
+    )
+    prompt = "\n\n".join(prompt_parts)
+
+    # Pull the active optimizer deployment from the openai backend's
+    # runtime state (configured by trainer / eval_only via
+    # set_optimizer_deployment). Falls back to the configured default.
+    from skillopt.model import azure_openai as _llm
+
+    model = getattr(_llm, "OPTIMIZER_DEPLOYMENT", "") or ""
+
+    with tempfile.TemporaryDirectory(prefix="skillopt_copilot_opt_") as work_dir:
+        response, _raw = run_copilot_cli_exec(
+            work_dir=work_dir,
+            prompt=prompt,
+            model=model,
+            timeout=int(timeout or 300),
+            available_tools="",  # optimizer-side: pure-text reasoning, no tool exploration
+            raw_prompt=True,  # bypass target-side prompt wrapper
+        )
+
+    usage = _zero_usage()
+    tracker.record(stage, usage["prompt_tokens"], usage["completion_tokens"])
+    return response, usage
+
+
+def _serialize_messages_for_copilot(
+    messages: list[dict[str, Any]],
+    tools: list[dict[str, Any]] | None,
+    tool_choice: str | dict[str, Any] | None,
+) -> str:
+    """Flatten a message list (plus optional tools) into a single prompt.
+
+    The shape mirrors what claude_backend / azure_openai do natively:
+    each message becomes a labeled block. Tool definitions, if any,
+    are appended with explicit instructions to return JSON of the form
+    ``{"tool_calls":[{"name":"...","arguments":{...}}]}``.
+    """
+    blocks: list[str] = []
+    for msg in messages or []:
+        role = str(msg.get("role", "user"))
+        content = msg.get("content", "")
+        # OpenAI / Anthropic-style content arrays: collapse to text only.
+        if isinstance(content, list):
+            text_parts = []
+            for chunk in content:
+                if isinstance(chunk, dict) and chunk.get("type") == "text":
+                    text_parts.append(str(chunk.get("text", "")))
+                elif isinstance(chunk, str):
+                    text_parts.append(chunk)
+            content = "\n".join(text_parts)
+        content = str(content or "")
+
+        if role == "system":
+            blocks.append("# System\n" + content)
+        elif role == "user":
+            blocks.append("# User\n" + content)
+        elif role == "assistant":
+            assistant_text = content
+            tool_calls = msg.get("tool_calls") or []
+            if tool_calls:
+                assistant_text += "\n\nTool calls: " + json.dumps(tool_calls, ensure_ascii=False)
+            blocks.append("# Assistant\n" + assistant_text)
+        elif role == "tool":
+            tcid = msg.get("tool_call_id", "?")
+            blocks.append(f"# Tool result (call {tcid})\n{content}")
+        else:
+            blocks.append(f"# {role}\n{content}")
+
+    if tools:
+        tools_block = "# Available tools\n"
+        tools_block += json.dumps(tools, ensure_ascii=False, indent=2)
+        tools_block += (
+            "\n\nTo call a tool, return ONLY a JSON object of the form:\n"
+            '{"tool_calls":[{"name":"<tool_name>","arguments":{...}}]}\n'
+            "Otherwise return plain text as your assistant message."
+        )
+        if tool_choice and tool_choice != "auto":
+            if isinstance(tool_choice, dict):
+                forced = tool_choice.get("function", {}).get("name") or tool_choice.get("name") or ""
+            else:
+                forced = str(tool_choice)
+            if forced and forced != "auto":
+                tools_block += f"\n\nYou MUST call the tool named: {forced}"
+        blocks.append(tools_block)
+
+    return "\n\n".join(blocks)
+
+
+def _parse_tool_calls_from_response(response: str) -> list[dict[str, Any]] | None:
+    """Try to recover a tool_calls list from the model's free-form response.
+
+    Returns ``None`` if no tool-call JSON is detected. Recognises the shape
+    enforced by ``_serialize_messages_for_copilot``.
+    """
+    text = (response or "").strip()
+    if not text:
+        return None
+
+    # Strip optional ``` fences.
+    if text.startswith("```"):
+        text = re.sub(r"^```[a-zA-Z]*\n", "", text)
+        text = text.rstrip("`").rstrip()
+    if not text.startswith("{"):
+        return None
+
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(parsed, dict):
+        return None
+    tool_calls = parsed.get("tool_calls")
+    if not isinstance(tool_calls, list) or not tool_calls:
+        return None
+
+    structured: list[dict[str, Any]] = []
+    for idx, call in enumerate(tool_calls):
+        if not isinstance(call, dict):
+            continue
+        name = str(call.get("name") or "")
+        arguments = call.get("arguments", {})
+        if not isinstance(arguments, str):
+            arguments = json.dumps(arguments, ensure_ascii=False)
+        structured.append(
+            {
+                "id": str(call.get("id") or f"call_{idx}"),
+                "type": "function",
+                "function": {"name": name, "arguments": arguments},
+            }
+        )
+    return structured or None
+
+
+def chat_optimizer_messages_via_copilot(
+    *,
+    messages: list[dict[str, Any]],
+    max_completion_tokens: int = 16384,  # noqa: ARG001 — API parity
+    retries: int = 5,  # noqa: ARG001 — handled inside run_copilot_cli_exec
+    stage: str = "optimizer",
+    tools: list[dict[str, Any]] | None = None,
+    tool_choice: str | dict[str, Any] | None = None,
+    return_message: bool = False,
+    timeout: int | None = None,
+) -> tuple[Any, dict[str, int]]:
+    """Multi-turn ``chat_optimizer_messages`` routed through Copilot CLI.
+
+    Serializes the message list into a single ``-p`` prompt. When ``tools``
+    is provided the model is instructed to emit JSON of the form
+    ``{"tool_calls":[...]}`` which we parse back into the
+    OpenAI-compatible message object via :class:`CompatAssistantMessage`.
+
+    No business-logic code in skillopt/ currently calls this (verified by
+    grep 2026-06-01). It exists for future callers and for API parity.
+    """
+    tempfile = _import_tempfile()
+    config = get_copilot_cli_exec_config()
+    tracker = _import_tracker()
+
+    prompt = _serialize_messages_for_copilot(messages, tools, tool_choice)
+    if tools and return_message:
+        # Make sure even no-tool-call answers come back as plain prose
+        prompt += "\n\nIf no tool is needed, return your reply as plain text."
+
+    from skillopt.model import azure_openai as _llm
+
+    model = getattr(_llm, "OPTIMIZER_DEPLOYMENT", "") or ""
+
+    with tempfile.TemporaryDirectory(prefix="skillopt_copilot_optmsg_") as work_dir:
+        response, _raw = run_copilot_cli_exec(
+            work_dir=work_dir,
+            prompt=prompt,
+            model=model,
+            timeout=int(timeout or 300),
+            available_tools="",  # optimizer-side: pure-text reasoning, no tool exploration
+            raw_prompt=True,  # bypass target-side prompt wrapper
+        )
+
+    usage = _zero_usage()
+    tracker.record(stage, usage["prompt_tokens"], usage["completion_tokens"])
+
+    if return_message:
+        tool_calls_raw = _parse_tool_calls_from_response(response) if tools else None
+        tool_calls: list[CompatToolCall] = []
+        for raw_call in tool_calls_raw or []:
+            tool_calls.append(
+                CompatToolCall(
+                    id=str(raw_call.get("id") or ""),
+                    function=CompatToolFunction(
+                        name=str(raw_call.get("function", {}).get("name") or ""),
+                        arguments=str(raw_call.get("function", {}).get("arguments") or "{}"),
+                    ),
+                )
+            )
+        msg = CompatAssistantMessage(
+            content=("" if tool_calls else response),
+            tool_calls=tool_calls,
+        )
+        return msg, usage
+
+    return response, usage

@@ -192,15 +192,15 @@ configs are being cleaned + released gradually (per the README
 
 ## Backend matrix
 
-| Backend key | Vendor / runtime | Role(s) | Module |
-|---|---|---|---|
-| `openai_chat` | Azure OpenAI or OpenAI-compatible REST | optimizer & target | `azure_openai.py` |
-| `claude_chat` | Anthropic Messages API | optimizer & target | `claude_backend.py` |
-| `qwen_chat` | local vLLM with OpenAI-compatible API | target | `qwen_backend.py` |
-| `minimax_chat` | MiniMax REST API | target | `minimax_backend.py` |
-| `codex_exec` | `codex` CLI (agentic harness) | target only | `codex_backend.py` (+ `codex_harness.py`) |
-| `claude_code_exec` | `claude` CLI (agentic harness) | target only | configured via `backend_config.py` |
-| `copilot_cli_exec` | `copilot` CLI (GitHub Copilot CLI agentic harness) | target only | `codex_harness.py:run_copilot_cli_exec` (added 2026-05-31, COPILOT-1) |
+| Backend key | Vendor / runtime | Role(s) | Module | Status |
+|---|---|---|---|---|
+| `openai_chat` | Azure OpenAI or OpenAI-compatible REST | optimizer & target | `azure_openai.py` | legacy (opt-in via `--backend azure_openai`) |
+| `claude_chat` | Anthropic Messages API | optimizer & target | `claude_backend.py` | legacy |
+| `qwen_chat` | local vLLM with OpenAI-compatible API | target | `qwen_backend.py` | legacy |
+| `minimax_chat` | MiniMax REST API | target | `minimax_backend.py` | legacy |
+| `codex_exec` | `codex` CLI (agentic harness) | target only | `codex_backend.py` (+ `codex_harness.py`) | legacy |
+| `claude_code_exec` | `claude` CLI (agentic harness) | target only | configured via `backend_config.py` | legacy |
+| `copilot_cli_exec` | `copilot` CLI (GitHub Copilot CLI agentic harness) | optimizer & target | `codex_harness.py:run_copilot_cli_exec` + `chat_optimizer_via_copilot` (COPILOT-1 + COPILOT-2) | **default** since 2026-06-01 |
 
 Optimizer and target backends are independent — the common
 production split is `optimizer_backend=openai_chat` +

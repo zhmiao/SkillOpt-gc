@@ -20,6 +20,78 @@
 
 ---
 
+## 2026-06-01 — Copilot-only direction; Azure OpenAI demoted to legacy
+
+**Context.** Original SkillOpt was Azure-OpenAI-first (paper default
+`gpt-5.5`, every config carries `azure_openai_*` knobs, trainer
+unconditionally calls `configure_azure_openai`). The user's goal for
+this fork (`SkillOpt-gc`) is to make SkillOpt **fully and solely for
+GitHub Copilot CLI** — single vendor relationship, single auth, no
+Azure / OpenAI / Anthropic / Qwen / MiniMax dependencies in the
+default path.
+
+**Options considered.**
+1. Add Copilot as one backend among many; keep Azure as default.
+2. Flip the default to Copilot but keep all backends as first-class.
+3. Flip the default to Copilot AND demote all other backends to a
+   "legacy" tier (work if explicitly invoked, but not on the
+   documented happy path).
+4. Flip + delete the other backend modules entirely.
+
+**Decision.** Option 3 this session; option 4 deferred to a separate
+commit after the Copilot-only smoke + a real dry run prove the path
+end-to-end (per user choice `backend_modules_fate=delete_after_smoke`
+in the 2026-06-01 form).
+
+**Why.**
+- The user reviews many projects and explicitly told me "the whole
+  purpose of this project is to make this skillopt fully and solely
+  for copilot."
+- A single-vendor configuration removes a class of "which auth is
+  active" failure modes that the test session surfaced multiple
+  times (Azure unset, Anthropic unset, mixed-mode confusion).
+- Option 3 preserves a non-destructive escape hatch for users who do
+  want to reproduce the paper exactly or run on a model Copilot
+  doesn't expose.
+
+**Trade-offs / costs.**
+- The 6 benchmark configs (`searchqa`, `alfworld`, `docvqa`,
+  `livemathematicianbench`, `officeqa`, `spreadsheetbench`) were
+  paper-trained against `gpt-5.5`/Azure. They still work via
+  `--backend azure_openai`, but the default config now routes them
+  through Copilot — which will produce different numbers from the
+  paper unless the user overrides.
+- Cross-vendor comparison stories (e.g., "optimizer is OpenAI,
+  target is Claude") become a non-default workflow.
+- Upstream `microsoft/SkillOpt` is openai-first; cherry-picks of
+  this fork's changes need extra care.
+
+**Code refs.**
+- `skillopt/model/backend_config.py`: `OPTIMIZER_BACKEND` and
+  `TARGET_BACKEND` env-var defaults now `copilot_cli_exec`.
+  `set_optimizer_backend` now allows `copilot_cli_exec` (it was
+  blocked until COPILOT-2).
+- `skillopt/model/__init__.py`: `chat_optimizer` and
+  `chat_optimizer_messages` now route to
+  `chat_optimizer_via_copilot` / `chat_optimizer_messages_via_copilot`
+  in `skillopt/model/codex_harness.py` when the active optimizer is
+  `copilot_cli_exec`.
+- `skillopt/engine/trainer.py:_configure_models`: `configure_azure_openai`
+  is now opt-in (only called when an Azure-consuming backend is
+  active or an Azure endpoint is provided). The default
+  `model_backend` constant flipped from `azure_openai` to
+  `copilot_cli_exec`.
+- `configs/_base_/default.yaml`: `model.backend`,
+  `model.optimizer_backend`, `model.target_backend` all default to
+  `copilot_cli_exec`; `model.optimizer` and `model.target` default
+  to `claude-opus-4.7-1m-internal`; `reasoning_effort` defaults to
+  `none` (because Claude models reject reasoning effort).
+- `README.md § Configure API Credentials`: Copilot CLI is the
+  documented happy path; the other backends collapsed into a
+  "Legacy backends" disclosure section.
+
+---
+
 ## 2026-05-31 — `copilot_cli_exec` ships CLI-only; no SDK path
 
 **Context.** The existing `codex_exec` and `claude_code_exec` backends

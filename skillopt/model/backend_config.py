@@ -13,8 +13,8 @@ def _parse_bool(value: str | None, default: bool) -> bool:
     return str(value).strip().lower() in {"1", "true", "yes", "on"}
 
 
-OPTIMIZER_BACKEND = normalize_backend_name(os.environ.get("OPTIMIZER_BACKEND", "openai_chat"))
-TARGET_BACKEND = normalize_backend_name(os.environ.get("TARGET_BACKEND", "openai_chat"))
+OPTIMIZER_BACKEND = normalize_backend_name(os.environ.get("OPTIMIZER_BACKEND", "copilot_cli_exec"))
+TARGET_BACKEND = normalize_backend_name(os.environ.get("TARGET_BACKEND", "copilot_cli_exec"))
 
 CODEX_EXEC_PATH = os.environ.get("CODEX_EXEC_PATH", "codex")
 CODEX_EXEC_SANDBOX = os.environ.get("CODEX_EXEC_SANDBOX", "workspace-write")
@@ -56,10 +56,10 @@ CLAUDE_CODE_EXEC_MAX_THINKING_TOKENS = max(
 def set_optimizer_backend(backend: str) -> None:
     global OPTIMIZER_BACKEND
     OPTIMIZER_BACKEND = normalize_backend_name(backend or "openai_chat")
-    if OPTIMIZER_BACKEND not in {"openai_chat", "claude_chat", "minimax_chat"}:
+    if OPTIMIZER_BACKEND not in {"openai_chat", "claude_chat", "minimax_chat", "copilot_cli_exec"}:
         raise ValueError(
             f"Unsupported optimizer backend: {OPTIMIZER_BACKEND!r}. "
-            "Supported values are 'openai_chat', 'claude_chat', and 'minimax_chat'."
+            "Supported values are 'openai_chat', 'claude_chat', 'minimax_chat', and 'copilot_cli_exec'."
         )
     os.environ["OPTIMIZER_BACKEND"] = OPTIMIZER_BACKEND
 
@@ -93,6 +93,11 @@ def get_target_backend() -> str:
 
 def is_target_exec_backend() -> bool:
     return TARGET_BACKEND in {"codex_exec", "claude_code_exec", "copilot_cli_exec"}
+
+
+def is_optimizer_exec_backend() -> bool:
+    """True when the active optimizer backend is a subprocess-based exec harness."""
+    return OPTIMIZER_BACKEND in {"copilot_cli_exec"}
 
 
 def is_optimizer_chat_backend() -> bool:

@@ -86,6 +86,17 @@ def chat_optimizer(
     reasoning_effort: str | None = None,
     timeout: int | None = None,
 ) -> tuple[str, dict]:
+    if get_optimizer_backend() == "copilot_cli_exec":
+        from skillopt.model.codex_harness import chat_optimizer_via_copilot
+
+        return chat_optimizer_via_copilot(
+            system=system,
+            user=user,
+            max_completion_tokens=max_completion_tokens,
+            retries=retries,
+            stage=stage,
+            timeout=timeout,
+        )
     if get_optimizer_backend() == "claude_chat":
         return _claude.chat_optimizer(
             system=system,
@@ -170,6 +181,19 @@ def chat_optimizer_messages(
     return_message: bool = False,
     timeout: int | None = None,
 ) -> tuple[Any, dict]:
+    if get_optimizer_backend() == "copilot_cli_exec":
+        from skillopt.model.codex_harness import chat_optimizer_messages_via_copilot
+
+        return chat_optimizer_messages_via_copilot(
+            messages=messages,
+            max_completion_tokens=max_completion_tokens,
+            retries=retries,
+            stage=stage,
+            tools=tools,
+            tool_choice=tool_choice,
+            return_message=return_message,
+            timeout=timeout,
+        )
     if get_optimizer_backend() == "claude_chat":
         return _claude.chat_optimizer_messages(
             messages=messages,

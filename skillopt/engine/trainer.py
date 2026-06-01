@@ -552,27 +552,47 @@ class ReflACTTrainer:
             return env_manager, batch.batch_size
 
         # ── Configure models ─────────────────────────────────────────────
-        backend = cfg.get("model_backend", "azure_openai")
-        configure_azure_openai(
-            endpoint=(cfg.get("azure_openai_endpoint") or cfg.get("azure_endpoint") or None),
-            api_version=(cfg.get("azure_openai_api_version") or cfg.get("azure_api_version") or None),
-            api_key=(cfg.get("azure_openai_api_key") or cfg.get("azure_api_key") or None),
-            auth_mode=cfg.get("azure_openai_auth_mode") or None,
-            ad_scope=cfg.get("azure_openai_ad_scope") or None,
-            managed_identity_client_id=cfg.get("azure_openai_managed_identity_client_id") or None,
-            optimizer_endpoint=cfg.get("optimizer_azure_openai_endpoint") or None,
-            optimizer_api_version=cfg.get("optimizer_azure_openai_api_version") or None,
-            optimizer_api_key=cfg.get("optimizer_azure_openai_api_key") or None,
-            optimizer_auth_mode=cfg.get("optimizer_azure_openai_auth_mode") or None,
-            optimizer_ad_scope=cfg.get("optimizer_azure_openai_ad_scope") or None,
-            optimizer_managed_identity_client_id=(cfg.get("optimizer_azure_openai_managed_identity_client_id") or None),
-            target_endpoint=cfg.get("target_azure_openai_endpoint") or None,
-            target_api_version=cfg.get("target_azure_openai_api_version") or None,
-            target_api_key=cfg.get("target_azure_openai_api_key") or None,
-            target_auth_mode=cfg.get("target_azure_openai_auth_mode") or None,
-            target_ad_scope=cfg.get("target_azure_openai_ad_scope") or None,
-            target_managed_identity_client_id=(cfg.get("target_azure_openai_managed_identity_client_id") or None),
+        # Default backend is now copilot_cli_exec (the Copilot-only direction
+        # documented in dev_docs/decisions.md). The wiring below remains
+        # backward-compatible for users who explicitly pick legacy backends
+        # (azure_openai, claude_chat, qwen_chat, minimax_chat, codex_exec).
+        backend = cfg.get("model_backend", "copilot_cli_exec")
+
+        # Azure OpenAI is only needed when the active optimizer or target
+        # actually routes through it. Skip the Azure configure call
+        # entirely when both sides are non-Azure backends.
+        provisional_opt = cfg.get("optimizer_backend") or ""
+        provisional_tgt = cfg.get("target_backend") or ""
+        azure_consumers = {"openai_chat", "azure_openai", "codex_exec"}
+        needs_azure_now = (
+            backend in azure_consumers
+            or provisional_opt in azure_consumers
+            or provisional_tgt in azure_consumers
+            or bool(cfg.get("azure_openai_endpoint") or cfg.get("azure_endpoint"))
         )
+        if needs_azure_now:
+            configure_azure_openai(
+                endpoint=(cfg.get("azure_openai_endpoint") or cfg.get("azure_endpoint") or None),
+                api_version=(cfg.get("azure_openai_api_version") or cfg.get("azure_api_version") or None),
+                api_key=(cfg.get("azure_openai_api_key") or cfg.get("azure_api_key") or None),
+                auth_mode=cfg.get("azure_openai_auth_mode") or None,
+                ad_scope=cfg.get("azure_openai_ad_scope") or None,
+                managed_identity_client_id=cfg.get("azure_openai_managed_identity_client_id") or None,
+                optimizer_endpoint=cfg.get("optimizer_azure_openai_endpoint") or None,
+                optimizer_api_version=cfg.get("optimizer_azure_openai_api_version") or None,
+                optimizer_api_key=cfg.get("optimizer_azure_openai_api_key") or None,
+                optimizer_auth_mode=cfg.get("optimizer_azure_openai_auth_mode") or None,
+                optimizer_ad_scope=cfg.get("optimizer_azure_openai_ad_scope") or None,
+                optimizer_managed_identity_client_id=(
+                    cfg.get("optimizer_azure_openai_managed_identity_client_id") or None
+                ),
+                target_endpoint=cfg.get("target_azure_openai_endpoint") or None,
+                target_api_version=cfg.get("target_azure_openai_api_version") or None,
+                target_api_key=cfg.get("target_azure_openai_api_key") or None,
+                target_auth_mode=cfg.get("target_azure_openai_auth_mode") or None,
+                target_ad_scope=cfg.get("target_azure_openai_ad_scope") or None,
+                target_managed_identity_client_id=(cfg.get("target_azure_openai_managed_identity_client_id") or None),
+            )
         optimizer_backend = cfg.get("optimizer_backend")
         target_backend = cfg.get("target_backend")
         if not optimizer_backend or not target_backend:
@@ -586,14 +606,18 @@ class ReflACTTrainer:
                 optimizer_backend = optimizer_backend or "openai_chat"
                 target_backend = target_backend or "claude_code_exec"
             elif backend in {"copilot", "copilot_cli", "copilot_cli_exec", "github_copilot"}:
-                optimizer_backend = optimizer_backend or "openai_chat"
+                optimizer_backend = optimizer_backend or "copilot_cli_exec"
                 target_backend = target_backend or "copilot_cli_exec"
             elif backend in {"qwen", "qwen_chat"}:
                 optimizer_backend = optimizer_backend or "openai_chat"
                 target_backend = target_backend or "qwen_chat"
-            else:
+            elif backend in {"openai_chat", "azure_openai", "azure", "azure-openai"}:
                 optimizer_backend = optimizer_backend or "openai_chat"
                 target_backend = target_backend or "openai_chat"
+            else:
+                # Copilot-only default for unknown / unset backends.
+                optimizer_backend = optimizer_backend or "copilot_cli_exec"
+                target_backend = target_backend or "copilot_cli_exec"
             cfg["optimizer_backend"] = optimizer_backend
             cfg["target_backend"] = target_backend
         set_optimizer_backend(optimizer_backend)

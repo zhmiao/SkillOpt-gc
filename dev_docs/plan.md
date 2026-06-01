@@ -163,14 +163,75 @@ introduced `rule_of_three`).
 
 User sign-off needed before Phase 2.5 (first training run).
 
-### Phase 2.5 — First training run (pending user sign-off)
-_Pending Phase 2 sign-off._
+### Phase 3 — Copilot-only mode (DONE 2026-06-01)
+COPILOT-2 (optimizer-side `copilot_cli_exec`) + Azure-removal
+cleanup. User direction: "the whole purpose of this project is to
+make this skillopt fully and solely for copilot."
 
-This is the explicit pause point per Option A. Will not start without
-user "go". Workflow options laid out in chat 2026-06-01.
+- [x] 3-A.1 Allow `copilot_cli_exec` in `set_optimizer_backend`
+      allow-list. Add `is_optimizer_exec_backend()`.
+- [x] 3-A.2 `chat_optimizer_via_copilot` + `chat_optimizer_messages_via_copilot`
+      in `codex_harness.py`. Tool-call serializer + parser. Unit tests
+      in `scripts/test_copilot_optimizer_helpers.py` pass.
+- [x] 3-A.3 `__init__.py` dispatchers route to the copilot path when
+      optimizer backend is `copilot_cli_exec`.
+- [x] 3-A.4 Default flip: `OPTIMIZER_BACKEND` and `TARGET_BACKEND`
+      env defaults now `copilot_cli_exec`. `configs/_base_/default.yaml`
+      `model.backend` flipped likewise. `model.optimizer` and
+      `model.target` default to `claude-opus-4.7-1m-internal`.
+      `reasoning_effort` default flipped from `medium` to `none`
+      (Claude models reject anything else).
+- [x] 3-A.5 Live smoke `scripts/smoke_copilot_optimizer.py`:
+      `chat_optimizer` returns `'Blue'` clean; `chat_optimizer_messages`
+      with forced tool choice returns parsed tool call
+      `name=report_color args={"color":"yellow"}`. STATUS: PASS.
+- [x] 3-B.1 Trainer: `configure_azure_openai` is opt-in (only called
+      when an Azure-consuming backend is active or an Azure endpoint
+      is set in the cfg).
+- [x] 3-B.2 `configs/_base_/default.yaml`: model.backend default
+      flipped to `copilot_cli_exec`. Azure knobs left in place but
+      no longer the happy path.
+- [x] 3-B.3 README "Configure API Credentials" rewritten: Copilot CLI
+      is the single documented happy path. Azure / OpenAI / Anthropic
+      / Qwen / MiniMax collapsed into a "Legacy backends" disclosure
+      block.
+- [x] 3-B.4 `dev_docs/architecture_overview.md` backend matrix gets
+      a "Status" column; copilot row marked **default since
+      2026-06-01**; everything else marked `legacy`.
+- [x] 3-B.5 `dev_docs/decisions.md` new entry: "Copilot-only
+      direction; Azure OpenAI demoted to legacy" with full
+      context/options/rationale/code-refs.
 
-### Phase 3+ — Second env onward
-_Per user direction at end of Phase 2.5._
+**Bugs surfaced and fixed during the live smoke:**
+- The first optimizer-side smoke returned tool-exploration noise
+  (`● List directory`, `Find markdown files`) because every prompt
+  was being wrapped with `_exec_prompt` — the target-side wrapper
+  that tells the model to read `task.md` / `.agents/skills/...`.
+  Added `raw_prompt=True` parameter to bypass that wrapper for
+  optimizer-side calls.
+- Even with `--available-tools=` disabling tool access, the
+  `_exec_prompt` wrapper was telling the model files would exist.
+  Fixed at the same time as the previous bug.
+
+### Phase 3.5 — Delete legacy backend modules (pending user sign-off)
+_Pending Phase 3 sign-off + user-verified dry run._
+
+Per user choice `backend_modules_fate=delete_after_smoke`:
+`azure_openai.py`, `claude_backend.py`, `qwen_backend.py`,
+`minimax_backend.py`, `codex_backend.py` will be deleted in a
+separate commit once the user has run an end-to-end stop_slop
+training cycle (or at least a dry run) on Copilot-only mode and
+confirmed nothing broke. `codex_harness.py` stays — it contains the
+Copilot-only path.
+
+### Phase 4 — First training run (pending user sign-off)
+_Pending Phase 3 sign-off._
+
+This is the explicit pause point per Option A. Will not start
+without user "go".
+
+### Phase 5+ — Second env onward
+_Per user direction at end of Phase 4._
 
 ## Backlog (high level)
 
