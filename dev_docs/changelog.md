@@ -21,6 +21,65 @@ pick up.
 
 ---
 
+## 2026-05-31 — COPILOT-1: Copilot CLI target backend (Phase 1)
+
+**Branch.** `chore/dev-docs-scaffold`
+**Commits.** `e6451b5 feat(model): add copilot_cli_exec target backend (COPILOT-1)`
+plus the earlier-this-session helpers:
+`270005f docs(plan): sign off Phase 0.5, expand Phase 1 into 14 sub-tasks`,
+`ab7b459 docs: mark Phase 0.5 (stop_slop dataset) complete in plan`,
+`534a18b feat(data): build stop_slop split + merge script`,
+`701616a/2225241/2050f07/5d28aad` (the four agent extraction streams).
+
+**What landed.**
+- `copilot_cli_exec` is now a first-class target-side backend.
+  Available as `--target_backend copilot_cli_exec` (or aliases
+  `copilot`, `copilot_cli`, `github_copilot`) on both
+  `scripts/train.py` and `scripts/eval_only.py`.
+- ~10 files changed, 6 new YAML knobs, 6 new CLI flags, new harness
+  function `run_copilot_cli_exec` in `skillopt/model/codex_harness.py`
+  modeled on `run_claude_code_exec`.
+- Smoke test `scripts/smoke_copilot_cli_exec.py` confirms a real
+  `copilot -p` round-trip works end-to-end. PASS.
+- README "Configure API Credentials" section now documents the new
+  backend (using `claude-sonnet-4.5` as the public example —
+  internal-only default model stays in code only).
+- Architecture overview backend matrix updated.
+
+**Decisions.** `dev_docs/decisions.md`:
+- "`copilot_cli_exec` ships CLI-only; no SDK path" — Copilot CLI
+  v1.0.57 does not ship a Python SDK; deferred until / if it does.
+
+**Lessons.** None new this round.
+
+**Bugs.** None.
+
+**Ideas added.**
+- `CLEAN-3` — `docs/guide/new-backend.md` is a stale generic
+  template referencing file names that don't exist. Surfaced while
+  adding `COPILOT-1`; not patched here, needs a rewrite (~2 hours).
+
+**Reformatting note.** `~/.copilot/hooks/post-tool-use.sh` auto-runs
+`ruff format` + `ruff check --fix` after every Python edit. The
+COPILOT-1 commit therefore shows ~470 deletions in
+`skillopt/engine/trainer.py` and ~90 in `scripts/eval_only.py` that
+are pure style normalization (line-length 120, blank-line PEP 8,
+import sort, removal of one unused `reset_token_tracker` import).
+Semantic additions are surgical and listed in the commit body.
+
+**Open / deferred.**
+- Phase 2 (`COPILOT-3` — `stop_slop` env adapter) — waiting on user
+  sign-off per agreed Phase 1 pause.
+- Phase 2.5 (first training run) — explicitly pauses again before
+  any training actually starts.
+- `COPILOT-2` (optimizer-side copilot_cli_exec) — deferred per user.
+- `COPILOT-9` (per-skill `outputs/skills/<skill>/<run>/` layout) —
+  lands alongside `COPILOT-3` rather than `COPILOT-1` (no skill
+  envs yet to use the new layout).
+- `CLEAN-3` — stale `docs/guide/new-backend.md`.
+
+---
+
 ## 2026-05-31 — Copilot integration design proposal
 
 **Branch.** `chore/dev-docs-scaffold` (continued from earlier
