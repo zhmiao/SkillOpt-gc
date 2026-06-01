@@ -150,6 +150,28 @@ is a code-smell that will eventually mislead someone.
 in `backend_config.py`. Decide which when an upstream patch is being
 prepared, since it would be a small standalone fix.
 
+### COPILOT-10 — Harness-side handling of `--effort` rejected by model
+
+**Where.** `skillopt/model/codex_harness.py:_run_copilot_cli_exec`
+(also affects `_run_claude_code_cli_exec` to a lesser extent).
+**What.** Copilot CLI's `--effort` flag is global but the model can
+reject it (e.g., `claude-sonnet-4.5` returns `Error: Model "X" does
+not support reasoning effort configuration`). Currently the harness
+always passes `--effort` when configured to a non-empty value, and
+the model error becomes the entire rollout output.
+**Impact.** Anyone configuring `copilot_cli_exec_effort=medium`
+(the default) with a non-reasoning model gets silently-failed
+rollouts that look like normal CLI output.
+**Action.** Detect the specific error message in the harness retry
+loop, drop `--effort` from the second attempt, log the demotion to
+the trace summary. Alternatively, maintain a static block-list of
+models that don't support effort (`claude-sonnet-4.5`,
+`claude-haiku-4.5`, ...) — but this is brittle.
+**Workaround for now.** Set `copilot_cli_exec_effort=none` in the
+config when using a non-reasoning model. The stop_slop smoke does
+this (see `scripts/smoke_stop_slop_env.py`).
+**Effort.** ~20 LOC + a smoke test fixture.
+
 ### CLEAN-3 — `docs/guide/new-backend.md` is a stale generic template
 
 **Where.** `docs/guide/new-backend.md` (130 lines).

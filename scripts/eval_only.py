@@ -45,6 +45,11 @@ from skillopt.utils import compute_score
 
 _ENV_REGISTRY: dict[str, type] = {}
 
+# COPILOT-9: env names in this set use outputs/skills/<env>/<run>/ for
+# eval outputs (instead of flat outputs/<run>/). Must match the set in
+# scripts/train.py — keep these in sync.
+_SKILL_ENVS: frozenset[str] = frozenset({"stop_slop"})
+
 
 def _register_builtins() -> None:
     try:
@@ -111,6 +116,12 @@ def _register_builtins() -> None:
         from skillopt.envs.swebench.adapter import SWEBenchAdapter
 
         _ENV_REGISTRY["swebench"] = SWEBenchAdapter
+    except ImportError:
+        pass
+    try:
+        from skillopt.envs.stop_slop.adapter import StopSlopAdapter
+
+        _ENV_REGISTRY["stop_slop"] = StopSlopAdapter
     except ImportError:
         pass
 
@@ -375,7 +386,10 @@ def main() -> None:
         env = cfg.get("env", "unknown")
         model = cfg.get("target_model", "unknown").replace("/", "-")
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        cfg["out_root"] = os.path.join("outputs", f"eval_{env}_{model}_{ts}")
+        if env in _SKILL_ENVS:
+            cfg["out_root"] = os.path.join("outputs", "skills", env, f"eval_{model}_{ts}")
+        else:
+            cfg["out_root"] = os.path.join("outputs", f"eval_{env}_{model}_{ts}")
 
     cfg["out_root"] = os.path.abspath(cfg["out_root"])
 

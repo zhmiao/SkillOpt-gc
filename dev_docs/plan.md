@@ -114,14 +114,63 @@ across ~10 files mirroring the existing `claude_code_exec` pattern.
 
 User sign-off needed before Phase 2.
 
-### Phase 2 — First env (`COPILOT-3` stop_slop)
-_Pending Phase 1 sign-off._
+### Phase 2 — First env (`COPILOT-3` stop_slop, DONE 2026-06-01)
+Built `skillopt/envs/stop_slop/` end-to-end. Smoke test against real
+Copilot CLI: 5/5 items succeeded, with real grading signal
+(3 hard=1, 2 hard=0; one caught `em_dash_overuse`, one caught
+introduced `rule_of_three`).
 
-Per user direction, will pause before any actual training. Plan to
-flesh out at start of Phase 2.
+- [x] 2.1 Grader semantics (`grader.py`): regex pass + batched LLM-judge
+      pass + severity-weighted soft score (high=3, medium=2, low=1) +
+      strict hard for positives (`input_tags absent AND no new patterns`)
+      and `prose_in != rewrite` for negatives.
+- [x] 2.2 `JudgeCache` (sha256-keyed in-process LRU, default 4096
+      entries) — collapses repeat judge calls during selection-set
+      re-evals.
+- [x] 2.3 `StopSlopDataLoader` (subclasses `SplitDataLoader`, reads
+      `items.json` per split).
+- [x] 2.4 `rollout.py`: prompt builder + `extract_rewrite` (strict —
+      requires `<rewrite>` tag, no fallback) + per-item `process_one` +
+      threaded `run_batch` + injectable `judge_fn` for tests.
+- [x] 2.5 `reflect.py`: thin wrapper around generic
+      `run_minibatch_reflect`.
+- [x] 2.6 `StopSlopAdapter` (`adapter.py`): standard `EnvAdapter`
+      subclass wiring dataloader + rollout + reflect; resolves
+      `catalog_path` from split_dir or env override.
+- [x] 2.7 `skills/initial.md`: copy of `~/.copilot/skills/stop-slop/SKILL.md`
+      (2629 chars).
+- [x] 2.8 `configs/stop_slop/default.yaml`: env-tuned defaults
+      (`batch_size=16`, `workers=8`, `sel/test_env_num=0` for full
+      splits, `catalog_path` auto-resolves).
+- [x] 2.9 Registry wiring: `_ENV_REGISTRY["stop_slop"] = StopSlopAdapter`
+      in both `scripts/train.py` and `scripts/eval_only.py`.
+- [x] 2.10 `COPILOT-9`: `_SKILL_ENVS = {"stop_slop"}` in both scripts;
+      out_root falls back to `outputs/skills/<env>/<run>/` when env is
+      in the set (vs flat `outputs/<run>/` for benchmark envs).
+- [x] 2.11 Smoke test (`scripts/smoke_stop_slop_env.py`): 5 train
+      items via Copilot CLI with stub LLM-judge. STATUS: PASS,
+      ~16s/rollout.
+- [x] 2.12 Bug found and fixed during smoke: `extract_rewrite` was
+      falling back to "treat entire response as rewrite" when no
+      `<rewrite>` tag found — caused Copilot CLI error transcripts to
+      be graded as perfect rewrites (hard=1 false positives). Now
+      strict: no tag → `fail_reason="no_rewrite_tag_in_response"`.
+- [x] 2.13 Bug found and worked around: `--effort low` rejected by
+      `claude-sonnet-4.5` model. Smoke now uses `effort="none"`
+      (skips the flag). Filed as `COPILOT-10` for a proper harness-side
+      fix.
+- [x] 2.14 Commit. Done in chore/dev-docs-scaffold branch.
+
+User sign-off needed before Phase 2.5 (first training run).
+
+### Phase 2.5 — First training run (pending user sign-off)
+_Pending Phase 2 sign-off._
+
+This is the explicit pause point per Option A. Will not start without
+user "go". Workflow options laid out in chat 2026-06-01.
 
 ### Phase 3+ — Second env onward
-_Per user direction at end of Phase 2._
+_Per user direction at end of Phase 2.5._
 
 ## Backlog (high level)
 

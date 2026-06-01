@@ -12,6 +12,7 @@ Any YAML key can be overridden from the command line::
 
 Run ``python scripts/train.py --help`` for a full list of options.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -35,62 +36,84 @@ _OPENAI_DEFAULT_MODEL_SENTINELS = {"gpt-5.4", "gpt-5.5"}
 
 _ENV_REGISTRY: dict[str, type] = {}
 
+# COPILOT-9: env names in this set use outputs/skills/<env>/<run>/ for
+# their training outputs (instead of the flat outputs/<run>/ used by
+# benchmark envs like searchqa/alfworld/etc).
+_SKILL_ENVS: frozenset[str] = frozenset({"stop_slop"})
+
 
 def _register_builtins() -> None:
     """Lazy-import built-in adapters so we don't pull heavy deps at CLI parse time."""
     try:
         from skillopt.envs.alfworld.adapter import ALFWorldAdapter
+
         _ENV_REGISTRY["alfworld"] = ALFWorldAdapter
     except ImportError:
         pass  # ALFWorld deps not installed — skip
     try:
         from skillopt.envs.searchqa.adapter import SearchQAAdapter
+
         _ENV_REGISTRY["searchqa"] = SearchQAAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.livemathematicianbench.adapter import LiveMathematicianBenchAdapter
+
         _ENV_REGISTRY["livemathematicianbench"] = LiveMathematicianBenchAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.babyvision.adapter import BabyVisionAdapter
+
         _ENV_REGISTRY["babyvision"] = BabyVisionAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.spreadsheetbench.adapter import SpreadsheetBenchAdapter
+
         _ENV_REGISTRY["spreadsheetbench"] = SpreadsheetBenchAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.mmrb.adapter import MMRBAdapter
+
         _ENV_REGISTRY["mmrb"] = MMRBAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.docvqa.adapter import DocVQAAdapter
+
         _ENV_REGISTRY["docvqa"] = DocVQAAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.mathverse.adapter import MathVerseAdapter
+
         _ENV_REGISTRY["mathverse"] = MathVerseAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.officeqa.adapter import OfficeQAAdapter
+
         _ENV_REGISTRY["officeqa"] = OfficeQAAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.sealqa.adapter import SealQAAdapter
+
         _ENV_REGISTRY["sealqa"] = SealQAAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.swebench.adapter import SWEBenchAdapter
+
         _ENV_REGISTRY["swebench"] = SWEBenchAdapter
+    except ImportError:
+        pass
+    try:
+        from skillopt.envs.stop_slop.adapter import StopSlopAdapter
+
+        _ENV_REGISTRY["stop_slop"] = StopSlopAdapter
     except ImportError:
         pass
 
@@ -100,14 +123,12 @@ def get_adapter(cfg: dict):
     _register_builtins()
     env_name = cfg.get("env", "alfworld")
     if env_name not in _ENV_REGISTRY:
-        raise ValueError(
-            f"Unknown environment '{env_name}'. "
-            f"Available: {list(_ENV_REGISTRY.keys())}"
-        )
+        raise ValueError(f"Unknown environment '{env_name}'. Available: {list(_ENV_REGISTRY.keys())}")
     adapter_cls = _ENV_REGISTRY[env_name]
 
     # Inspect adapter __init__ signature and only pass accepted kwargs
     import inspect
+
     sig = inspect.signature(adapter_cls.__init__)
     accepted = set(sig.parameters.keys()) - {"self"}
     adapter_kwargs: dict = {}
@@ -129,21 +150,34 @@ def parse_args() -> argparse.Namespace:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
-    p.add_argument("--config", type=str, required=True,
-                   help="Path to YAML config file")
-    p.add_argument("--cfg-options", nargs="+", default=[],
-                   help="Override config: section.key=value (e.g. train.batch_size=40)")
+    p.add_argument("--config", type=str, required=True, help="Path to YAML config file")
+    p.add_argument(
+        "--cfg-options", nargs="+", default=[], help="Override config: section.key=value (e.g. train.batch_size=40)"
+    )
 
     # Legacy flat CLI overrides (still work, prefer --cfg-options for new usage)
     p.add_argument("--env", type=str)
-    p.add_argument("--backend", type=str,
-                   choices=["azure_openai", "codex", "codex_exec", "claude", "claude_chat", "claude_code_exec", "qwen", "qwen_chat", "minimax", "minimax_chat"])
+    p.add_argument(
+        "--backend",
+        type=str,
+        choices=[
+            "azure_openai",
+            "codex",
+            "codex_exec",
+            "claude",
+            "claude_chat",
+            "claude_code_exec",
+            "qwen",
+            "qwen_chat",
+            "minimax",
+            "minimax_chat",
+        ],
+    )
     p.add_argument("--optimizer_model", type=str)
     p.add_argument("--target_model", type=str)
     p.add_argument("--optimizer_backend", type=str)
     p.add_argument("--target_backend", type=str)
-    p.add_argument("--reasoning_effort", type=str,
-                   choices=["", "low", "medium", "high", "xhigh", "max"])
+    p.add_argument("--reasoning_effort", type=str, choices=["", "low", "medium", "high", "xhigh", "max"])
     p.add_argument("--rewrite_reasoning_effort", type=str)
     p.add_argument("--rewrite_max_completion_tokens", type=int)
     p.add_argument("--azure_endpoint", type=str)
@@ -203,10 +237,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--seed", type=int)
     p.add_argument("--edit_budget", type=int)
     p.add_argument("--min_edit_budget", type=int)
-    p.add_argument("--lr_scheduler", type=str,
-                   choices=["constant", "linear", "cosine", "autonomous"])
-    p.add_argument("--lr_control_mode", type=str,
-                   choices=["fixed", "autonomous", "none"])
+    p.add_argument("--lr_scheduler", type=str, choices=["constant", "linear", "cosine", "autonomous"])
+    p.add_argument("--lr_control_mode", type=str, choices=["fixed", "autonomous", "none"])
     p.add_argument("--merge_batch_size", type=int)
     p.add_argument("--max_analyst_rounds", type=int)
     p.add_argument("--sel_env_num", type=int)
@@ -218,24 +250,25 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--analyst_workers", type=int)
     p.add_argument("--failure_only", type=_BOOL)
     p.add_argument("--minibatch_size", type=int)
-    p.add_argument("--skill_update_mode", type=str,
-                   choices=[
-                       "patch",
-                       "rewrite_from_suggestions",
-                       "rewrite",
-                       "suggestions",
-                       "full_rewrite",
-                       "full_rewrite_minibatch",
-                       "minibatch_full_rewrite",
-                   ])
+    p.add_argument(
+        "--skill_update_mode",
+        type=str,
+        choices=[
+            "patch",
+            "rewrite_from_suggestions",
+            "rewrite",
+            "suggestions",
+            "full_rewrite",
+            "full_rewrite_minibatch",
+            "minibatch_full_rewrite",
+        ],
+    )
     p.add_argument("--use_slow_update", type=_BOOL)
     p.add_argument("--slow_update_samples", type=int)
-    p.add_argument("--longitudinal_pair_policy", type=str,
-                   choices=["mixed", "changed", "unchanged"])
+    p.add_argument("--longitudinal_pair_policy", type=str, choices=["mixed", "changed", "unchanged"])
     p.add_argument("--use_meta_skill", type=_BOOL)
     p.add_argument("--data_path", type=str)
-    p.add_argument("--split_mode", type=str,
-                   choices=["ratio", "split_dir"])
+    p.add_argument("--split_mode", type=str, choices=["ratio", "split_dir"])
     p.add_argument("--split_ratio", type=str)
     p.add_argument("--split_seed", type=int)
     p.add_argument("--split_dir", type=str)
@@ -348,17 +381,18 @@ _LEGACY_TO_STRUCTURED: dict[str, str] = {
 
 def load_config(args: argparse.Namespace) -> dict:
     """Load config with _base_ inheritance, then apply CLI overrides."""
-    from skillopt.config import load_config as _load, flatten_config, is_structured
+    from skillopt.config import flatten_config, is_structured
+    from skillopt.config import load_config as _load
 
     cfg = _load(args.config, overrides=args.cfg_options)
     structured = is_structured(cfg)
 
     # Apply legacy --key value overrides
-    cli = {k: v for k, v in vars(args).items()
-           if v is not None and k not in ("config", "cfg_options")}
+    cli = {k: v for k, v in vars(args).items() if v is not None and k not in ("config", "cfg_options")}
     if cli:
         if structured:
             from skillopt.config import apply_overrides
+
             mapped = []
             for k, v in cli.items():
                 dotted = _LEGACY_TO_STRUCTURED.get(k)
@@ -426,45 +460,42 @@ def load_config(args: argparse.Namespace) -> dict:
         flat.setdefault("target_backend", "openai_chat")
 
     if flat.get("optimizer_backend") == "claude_chat":
-        if (
-            str(flat.get("optimizer_model", "") or "").strip() in _OPENAI_DEFAULT_MODEL_SENTINELS
-            and not _has_model_override("model.optimizer", "optimizer_model")
-        ):
+        if str(
+            flat.get("optimizer_model", "") or ""
+        ).strip() in _OPENAI_DEFAULT_MODEL_SENTINELS and not _has_model_override("model.optimizer", "optimizer_model"):
             flat["optimizer_model"] = default_model_for_backend("claude_chat")
     if flat.get("target_backend") == "claude_chat":
-        if (
-            str(flat.get("target_model", "") or "").strip() in _OPENAI_DEFAULT_MODEL_SENTINELS
-            and not _has_model_override("model.target", "target_model")
-        ):
+        if str(
+            flat.get("target_model", "") or ""
+        ).strip() in _OPENAI_DEFAULT_MODEL_SENTINELS and not _has_model_override("model.target", "target_model"):
             flat["target_model"] = default_model_for_backend("claude_chat")
     if flat.get("target_backend") == "claude_code_exec":
-        if (
-            str(flat.get("target_model", "") or "").strip() in _OPENAI_DEFAULT_MODEL_SENTINELS
-            and not _has_model_override("model.target", "target_model")
-        ):
+        if str(
+            flat.get("target_model", "") or ""
+        ).strip() in _OPENAI_DEFAULT_MODEL_SENTINELS and not _has_model_override("model.target", "target_model"):
             flat["target_model"] = default_model_for_backend("claude_chat")
     if flat.get("target_backend") == "qwen_chat":
-        if (
-            str(flat.get("target_model", "") or "").strip() in _OPENAI_DEFAULT_MODEL_SENTINELS
-            and not _has_model_override("model.target", "target_model")
-        ):
+        if str(
+            flat.get("target_model", "") or ""
+        ).strip() in _OPENAI_DEFAULT_MODEL_SENTINELS and not _has_model_override("model.target", "target_model"):
             flat["target_model"] = default_model_for_backend("qwen_chat")
     if flat.get("target_backend") == "minimax_chat":
-        if (
-            str(flat.get("target_model", "") or "").strip() in _OPENAI_DEFAULT_MODEL_SENTINELS
-            and not _has_model_override("model.target", "target_model")
-        ):
-            flat["target_model"] = (
-                flat.get("minimax_model")
-                or default_model_for_backend("minimax_chat")
-            )
+        if str(
+            flat.get("target_model", "") or ""
+        ).strip() in _OPENAI_DEFAULT_MODEL_SENTINELS and not _has_model_override("model.target", "target_model"):
+            flat["target_model"] = flat.get("minimax_model") or default_model_for_backend("minimax_chat")
 
-    # Auto-generate output root
+    # Auto-generate output root.
+    # COPILOT-9: skill envs use outputs/skills/<env>/<run>/ to keep them
+    # separate from benchmark runs.
     if not flat.get("out_root"):
         env = flat.get("env", "unknown")
         model = flat.get("optimizer_model", "unknown").replace("/", "-")
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        flat["out_root"] = os.path.join("outputs", f"skillopt_{env}_{model}_{ts}")
+        if env in _SKILL_ENVS:
+            flat["out_root"] = os.path.join("outputs", "skills", env, f"{model}_{ts}")
+        else:
+            flat["out_root"] = os.path.join("outputs", f"skillopt_{env}_{model}_{ts}")
 
     flat["out_root"] = os.path.abspath(flat["out_root"])
     return flat
@@ -472,13 +503,14 @@ def load_config(args: argparse.Namespace) -> dict:
 
 # ── Main ─────────────────────────────────────────────────────────────────────
 
+
 def main() -> None:
     args = parse_args()
     cfg = load_config(args)
 
-    print(f"\n{'='*60}")
-    print(f"  SkillOpt — Executive Strategy for Self-Evolving Agent Skills")
-    print(f"{'='*60}")
+    print(f"\n{'=' * 60}")
+    print("  SkillOpt — Executive Strategy for Self-Evolving Agent Skills")
+    print(f"{'=' * 60}")
     print(f"  env:            {cfg.get('env')}")
     print(f"  optimizer_model:  {cfg.get('optimizer_model')}")
     print(f"  target_model:  {cfg.get('target_model')}")
@@ -488,7 +520,7 @@ def main() -> None:
     print(f"  rewrite_effort: {cfg.get('rewrite_reasoning_effort') or 'off'}")
     print(f"  epochs:         {cfg.get('num_epochs')}")
     print(f"  train_size:     {cfg.get('train_size') or 'from dataset'}")
-    print(f"  steps/epoch:    auto")
+    print("  steps/epoch:    auto")
     print(f"  batch_size:     {cfg.get('batch_size')}")
     print(f"  edit_budget:    {cfg.get('edit_budget')}")
     print(f"  lr_scheduler:   {cfg.get('lr_scheduler', 'constant')}")
@@ -499,13 +531,14 @@ def main() -> None:
     print(f"  meta_skill:     {cfg.get('use_meta_skill', False)}")
     print(f"  slow_update:    {cfg.get('use_slow_update', False)}")
     print(f"  out_root:       {cfg.get('out_root')}")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
     # Build adapter
     adapter = get_adapter(cfg)
 
     # Build trainer and run
     from skillopt.engine.trainer import ReflACTTrainer
+
     trainer = ReflACTTrainer(cfg, adapter)
     summary = trainer.train()
 

@@ -1,0 +1,36 @@
+_base_: ../_base_/default.yaml
+
+model:
+  reasoning_effort: low
+
+train:
+  train_size: 151           # matches the actual train split size
+  batch_size: 16            # cheap rollouts; smaller batches keep iteration tight
+  accumulation: 1
+
+gradient:
+  minibatch_size: 8
+  merge_batch_size: 8
+
+optimizer:
+  learning_rate: 4
+  use_slow_update: true
+  use_meta_skill: true
+
+evaluation:
+  sel_env_num: 0            # use full val split (50 items)
+  test_env_num: 0           # full test split
+
+env:
+  name: stop_slop
+  skill_init: skillopt/envs/stop_slop/skills/initial.md
+  split_mode: split_dir
+  split_dir: data/stop_slop_split
+  data_path: ""
+  split_output_dir: ""
+  exec_timeout: 120
+  max_completion_tokens: 4096
+  workers: 8
+  analyst_workers: 16
+  limit: 0
+  catalog_path: ""          # empty = auto-resolve from split_dir/banned_patterns.json
