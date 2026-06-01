@@ -57,19 +57,62 @@ Four parallel extraction streams dispatched as background agents
       catalog extended from 47 → 57 with 10 new canonical patterns
       surfaced by streams 1/2/3 (anaphora, metaphor_overuse,
       q_and_a_pair, staccato_fragmentation, etc.). Commit `534a18b`.
-- [ ] User signs off on dataset before Phase 1 begins.
+- [x] User signed off after seeing 14 sample items spanning the top
+      patterns (chat 2026-05-31).
 
-### Phase 1 — Backend (`COPILOT-1`)
-_Pending Phase 0.5 sign-off._
+### Phase 1 — Backend (`COPILOT-1`, active now)
+Scope: **target-side only** (per user `copilot_scope=target_only_first`).
+Optimizer-side support deferred to `COPILOT-2`.
 
-Default model for `copilot_cli_exec`: `claude-opus-4.7-1m-internal`
-(per user decision; documented in `dev_docs/decisions.md` as a
-fork-only default that must NOT be propagated upstream).
-Optimizer-side support: deferred to `COPILOT-2`.
-Outputs layout: per-skill subdir (`COPILOT-9` lands alongside).
+Per `dev_docs/design/copilot_integration_plan.md § A.1`, ~430 LOC
+across ~10 files mirroring the existing `claude_code_exec` pattern.
+
+- [ ] 1.1 — Per-backend constants + `configure_*` / `get_*` in
+      `skillopt/model/backend_config.py`. Add `COPILOT_CLI_EXEC_*`
+      env-backed vars, `configure_copilot_cli_exec()`,
+      `get_copilot_cli_exec_config()`.
+- [ ] 1.2 — Validation set + alias + default model:
+      `backend_config.py:set_target_backend` allow-list,
+      `is_target_exec_backend` set, `common.py:_BACKEND_DEFAULT_MODELS`
+      (default = `claude-opus-4.7-1m-internal` per user — fork-only),
+      `common.py:_BACKEND_ALIASES`.
+- [ ] 1.3 — Harness implementation in `skillopt/model/codex_harness.py`:
+      add `run_copilot_cli_exec(...)` modeled on `run_claude_code_exec`.
+      CLI-only path (no SDK — copilot doesn't ship one yet).
+- [ ] 1.4 — Dispatcher: add `if backend == "copilot_cli_exec":` branch
+      in `codex_harness.py:run_target_exec`.
+- [ ] 1.5 — Public re-exports in `skillopt/model/__init__.py`:
+      `configure_copilot_cli_exec`, `get_copilot_cli_exec_config`.
+- [ ] 1.6 — Config flatten map in `skillopt/config.py:_FLATTEN_MAP`:
+      `model.copilot_cli_exec_path`, `_effort`, `_allow_all_tools`,
+      `_session_state_root`, `_model`.
+- [ ] 1.7 — Defaults YAML: add `copilot_cli_exec_*` block to
+      `configs/_base_/default.yaml`.
+- [ ] 1.8 — Trainer wiring: `skillopt/engine/trainer.py:599` (backend
+      resolution) + `:625` (`configure_*` calls).
+- [ ] 1.9 — Eval-only wiring: same as trainer for
+      `scripts/eval_only.py`.
+- [ ] 1.10 — Env template: add `# ── GitHub Copilot CLI` block to
+      `.env.example`.
+- [ ] 1.11 — Smoke test: round-trip `copilot -p "say hello"
+      --allow-all-tools` through the harness via a tiny standalone
+      Python script. Output must be non-empty and the harness must
+      not raise.
+- [ ] 1.12 — Public docs: update `docs/guide/new-backend.md` and
+      `README.md` Configure-API-Credentials section with the new
+      backend. **Skip the fork-only default model in the public docs**
+      (use `claude-sonnet-4.5` or `gpt-5.5` example there).
+- [ ] 1.13 — Internal docs: update
+      `dev_docs/architecture_overview.md § Backend matrix` with the
+      new row. Add `dev_docs/decisions.md` entry for the
+      CLI-only-no-SDK choice.
+- [ ] 1.14 — Commit and pause for user before Phase 2.
 
 ### Phase 2 — First env (`COPILOT-3` stop_slop)
-_Pending Phase 1._
+_Pending Phase 1 sign-off._
+
+Per user direction, will pause before any actual training. Plan to
+flesh out at start of Phase 2.
 
 ### Phase 3+ — Second env onward
 _Per user direction at end of Phase 2._
