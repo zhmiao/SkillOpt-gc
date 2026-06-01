@@ -1,9 +1,10 @@
 """Runtime backend configuration for optimizer/target model calls."""
+
 from __future__ import annotations
 
 import os
 
-from skillopt.model.common import default_model_for_backend, normalize_backend_name
+from skillopt.model.common import normalize_backend_name
 
 
 def _parse_bool(value: str | None, default: bool) -> bool:
@@ -28,6 +29,12 @@ CLAUDE_CODE_EXEC_PATH = os.environ.get("CLAUDE_CODE_EXEC_PATH", "claude")
 CLAUDE_CODE_EXEC_PROFILE = os.environ.get("CLAUDE_CODE_EXEC_PROFILE", "")
 CLAUDE_CODE_EXEC_USE_SDK = os.environ.get("CLAUDE_CODE_EXEC_USE_SDK", "auto")
 CLAUDE_CODE_EXEC_EFFORT = os.environ.get("CLAUDE_CODE_EXEC_EFFORT", "medium")
+COPILOT_CLI_EXEC_PATH = os.environ.get("COPILOT_CLI_EXEC_PATH", "copilot")
+COPILOT_CLI_EXEC_EFFORT = os.environ.get("COPILOT_CLI_EXEC_EFFORT", "medium")
+COPILOT_CLI_EXEC_ALLOW_ALL_TOOLS = _parse_bool(os.environ.get("COPILOT_CLI_EXEC_ALLOW_ALL_TOOLS"), True)
+COPILOT_CLI_EXEC_ALLOW_ALL_PATHS = _parse_bool(os.environ.get("COPILOT_CLI_EXEC_ALLOW_ALL_PATHS"), False)
+COPILOT_CLI_EXEC_ALLOW_ALL_URLS = _parse_bool(os.environ.get("COPILOT_CLI_EXEC_ALLOW_ALL_URLS"), False)
+COPILOT_CLI_EXEC_AGENT = os.environ.get("COPILOT_CLI_EXEC_AGENT", "")
 
 
 def _parse_int(value: str | None, default: int) -> int:
@@ -64,10 +71,18 @@ def get_optimizer_backend() -> str:
 def set_target_backend(backend: str) -> None:
     global TARGET_BACKEND
     TARGET_BACKEND = normalize_backend_name(backend or "openai_chat")
-    if TARGET_BACKEND not in {"openai_chat", "claude_chat", "qwen_chat", "minimax_chat", "codex_exec", "claude_code_exec"}:
+    if TARGET_BACKEND not in {
+        "openai_chat",
+        "claude_chat",
+        "qwen_chat",
+        "minimax_chat",
+        "codex_exec",
+        "claude_code_exec",
+        "copilot_cli_exec",
+    }:
         raise ValueError(
             f"Unsupported target backend: {TARGET_BACKEND!r}. "
-            "Supported values are 'openai_chat', 'claude_chat', 'qwen_chat', 'minimax_chat', 'codex_exec', and 'claude_code_exec'."
+            "Supported values are 'openai_chat', 'claude_chat', 'qwen_chat', 'minimax_chat', 'codex_exec', 'claude_code_exec', and 'copilot_cli_exec'."
         )
     os.environ["TARGET_BACKEND"] = TARGET_BACKEND
 
@@ -77,7 +92,7 @@ def get_target_backend() -> str:
 
 
 def is_target_exec_backend() -> bool:
-    return TARGET_BACKEND in {"codex_exec", "claude_code_exec"}
+    return TARGET_BACKEND in {"codex_exec", "claude_code_exec", "copilot_cli_exec"}
 
 
 def is_optimizer_chat_backend() -> bool:
@@ -100,7 +115,16 @@ def configure_codex_exec(
     web_search: bool | None = None,
     approval_policy: str | None = None,
 ) -> None:
-    global CODEX_EXEC_PATH, CODEX_EXEC_SANDBOX, CODEX_EXEC_PROFILE, CODEX_EXEC_FULL_AUTO, CODEX_EXEC_REASONING_EFFORT, CODEX_EXEC_USE_SDK, CODEX_EXEC_NETWORK_ACCESS, CODEX_EXEC_WEB_SEARCH, CODEX_EXEC_APPROVAL_POLICY
+    global \
+        CODEX_EXEC_PATH, \
+        CODEX_EXEC_SANDBOX, \
+        CODEX_EXEC_PROFILE, \
+        CODEX_EXEC_FULL_AUTO, \
+        CODEX_EXEC_REASONING_EFFORT, \
+        CODEX_EXEC_USE_SDK, \
+        CODEX_EXEC_NETWORK_ACCESS, \
+        CODEX_EXEC_WEB_SEARCH, \
+        CODEX_EXEC_APPROVAL_POLICY
     if path is not None:
         CODEX_EXEC_PATH = str(path).strip() or "codex"
         os.environ["CODEX_EXEC_PATH"] = CODEX_EXEC_PATH
@@ -153,7 +177,12 @@ def configure_claude_code_exec(
     effort: str | None = None,
     max_thinking_tokens: int | str | None = None,
 ) -> None:
-    global CLAUDE_CODE_EXEC_PATH, CLAUDE_CODE_EXEC_PROFILE, CLAUDE_CODE_EXEC_USE_SDK, CLAUDE_CODE_EXEC_EFFORT, CLAUDE_CODE_EXEC_MAX_THINKING_TOKENS
+    global \
+        CLAUDE_CODE_EXEC_PATH, \
+        CLAUDE_CODE_EXEC_PROFILE, \
+        CLAUDE_CODE_EXEC_USE_SDK, \
+        CLAUDE_CODE_EXEC_EFFORT, \
+        CLAUDE_CODE_EXEC_MAX_THINKING_TOKENS
     if path is not None:
         CLAUDE_CODE_EXEC_PATH = str(path).strip() or "claude"
         os.environ["CLAUDE_CODE_EXEC_PATH"] = CLAUDE_CODE_EXEC_PATH
@@ -181,5 +210,53 @@ def get_claude_code_exec_config() -> dict[str, str | int]:
         "use_sdk": CLAUDE_CODE_EXEC_USE_SDK,
         "effort": CLAUDE_CODE_EXEC_EFFORT,
         "max_thinking_tokens": CLAUDE_CODE_EXEC_MAX_THINKING_TOKENS,
+        "empty_response_retries": EXEC_EMPTY_RESPONSE_RETRIES,
+    }
+
+
+def configure_copilot_cli_exec(
+    *,
+    path: str | None = None,
+    effort: str | None = None,
+    allow_all_tools: bool | None = None,
+    allow_all_paths: bool | None = None,
+    allow_all_urls: bool | None = None,
+    agent: str | None = None,
+) -> None:
+    """Configure the GitHub Copilot CLI target backend (`copilot_cli_exec`).
+
+    Mirrors the shape of :func:`configure_claude_code_exec`. CLI-only —
+    Copilot CLI does not ship an SDK yet, so no ``use_sdk`` knob.
+    """
+    global COPILOT_CLI_EXEC_PATH, COPILOT_CLI_EXEC_EFFORT, COPILOT_CLI_EXEC_ALLOW_ALL_TOOLS
+    global COPILOT_CLI_EXEC_ALLOW_ALL_PATHS, COPILOT_CLI_EXEC_ALLOW_ALL_URLS, COPILOT_CLI_EXEC_AGENT
+    if path is not None:
+        COPILOT_CLI_EXEC_PATH = str(path).strip() or "copilot"
+        os.environ["COPILOT_CLI_EXEC_PATH"] = COPILOT_CLI_EXEC_PATH
+    if effort is not None:
+        COPILOT_CLI_EXEC_EFFORT = str(effort).strip().lower() or "medium"
+        os.environ["COPILOT_CLI_EXEC_EFFORT"] = COPILOT_CLI_EXEC_EFFORT
+    if allow_all_tools is not None:
+        COPILOT_CLI_EXEC_ALLOW_ALL_TOOLS = bool(allow_all_tools)
+        os.environ["COPILOT_CLI_EXEC_ALLOW_ALL_TOOLS"] = "true" if COPILOT_CLI_EXEC_ALLOW_ALL_TOOLS else "false"
+    if allow_all_paths is not None:
+        COPILOT_CLI_EXEC_ALLOW_ALL_PATHS = bool(allow_all_paths)
+        os.environ["COPILOT_CLI_EXEC_ALLOW_ALL_PATHS"] = "true" if COPILOT_CLI_EXEC_ALLOW_ALL_PATHS else "false"
+    if allow_all_urls is not None:
+        COPILOT_CLI_EXEC_ALLOW_ALL_URLS = bool(allow_all_urls)
+        os.environ["COPILOT_CLI_EXEC_ALLOW_ALL_URLS"] = "true" if COPILOT_CLI_EXEC_ALLOW_ALL_URLS else "false"
+    if agent is not None:
+        COPILOT_CLI_EXEC_AGENT = str(agent).strip()
+        os.environ["COPILOT_CLI_EXEC_AGENT"] = COPILOT_CLI_EXEC_AGENT
+
+
+def get_copilot_cli_exec_config() -> dict[str, str | bool | int]:
+    return {
+        "path": COPILOT_CLI_EXEC_PATH,
+        "effort": COPILOT_CLI_EXEC_EFFORT,
+        "allow_all_tools": COPILOT_CLI_EXEC_ALLOW_ALL_TOOLS,
+        "allow_all_paths": COPILOT_CLI_EXEC_ALLOW_ALL_PATHS,
+        "allow_all_urls": COPILOT_CLI_EXEC_ALLOW_ALL_URLS,
+        "agent": COPILOT_CLI_EXEC_AGENT,
         "empty_response_retries": EXEC_EMPTY_RESPONSE_RETRIES,
     }

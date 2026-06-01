@@ -11,6 +11,7 @@ Usage
 
 All YAML keys can be overridden from the CLI, same as train.py.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -28,17 +29,17 @@ from skillopt.model import (
     configure_azure_openai,
     configure_claude_code_exec,
     configure_codex_exec,
+    configure_copilot_cli_exec,
+    set_optimizer_backend,
+    set_optimizer_deployment,
     set_reasoning_effort,
     set_target_backend,
     set_target_deployment,
-    set_optimizer_backend,
-    set_optimizer_deployment,
 )
 from skillopt.model.common import default_model_for_backend, normalize_backend_name
 
 _OPENAI_DEFAULT_MODEL_SENTINELS = {"gpt-5.4", "gpt-5.5"}
 from skillopt.utils import compute_score
-
 
 # ── Reuse registry from train.py ───────────────────────────────────────────
 
@@ -48,56 +49,67 @@ _ENV_REGISTRY: dict[str, type] = {}
 def _register_builtins() -> None:
     try:
         from skillopt.envs.alfworld.adapter import ALFWorldAdapter
+
         _ENV_REGISTRY["alfworld"] = ALFWorldAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.searchqa.adapter import SearchQAAdapter
+
         _ENV_REGISTRY["searchqa"] = SearchQAAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.livemathematicianbench.adapter import LiveMathematicianBenchAdapter
+
         _ENV_REGISTRY["livemathematicianbench"] = LiveMathematicianBenchAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.babyvision.adapter import BabyVisionAdapter
+
         _ENV_REGISTRY["babyvision"] = BabyVisionAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.spreadsheetbench.adapter import SpreadsheetBenchAdapter
+
         _ENV_REGISTRY["spreadsheetbench"] = SpreadsheetBenchAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.mmrb.adapter import MMRBAdapter
+
         _ENV_REGISTRY["mmrb"] = MMRBAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.docvqa.adapter import DocVQAAdapter
+
         _ENV_REGISTRY["docvqa"] = DocVQAAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.mathverse.adapter import MathVerseAdapter
+
         _ENV_REGISTRY["mathverse"] = MathVerseAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.officeqa.adapter import OfficeQAAdapter
+
         _ENV_REGISTRY["officeqa"] = OfficeQAAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.sealqa.adapter import SealQAAdapter
+
         _ENV_REGISTRY["sealqa"] = SealQAAdapter
     except ImportError:
         pass
     try:
         from skillopt.envs.swebench.adapter import SWEBenchAdapter
+
         _ENV_REGISTRY["swebench"] = SWEBenchAdapter
     except ImportError:
         pass
@@ -107,13 +119,11 @@ def get_adapter(cfg: dict):
     _register_builtins()
     env_name = cfg.get("env", "alfworld")
     if env_name not in _ENV_REGISTRY:
-        raise ValueError(
-            f"Unknown environment '{env_name}'. "
-            f"Available: {list(_ENV_REGISTRY.keys())}"
-        )
+        raise ValueError(f"Unknown environment '{env_name}'. Available: {list(_ENV_REGISTRY.keys())}")
     adapter_cls = _ENV_REGISTRY[env_name]
 
     import inspect
+
     sig = inspect.signature(adapter_cls.__init__)
     accepted = set(sig.parameters.keys()) - {"self"}
     adapter_kwargs = {k: cfg[k] for k in accepted if k in cfg}
@@ -128,22 +138,33 @@ _BOOL = lambda x: str(x).lower() in ("true", "1", "yes")  # noqa: E731
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="SkillOpt eval-only")
     p.add_argument("--config", type=str, required=True)
-    p.add_argument("--skill", type=str, required=True,
-                   help="Path to skill .md file to evaluate")
-    p.add_argument("--split", type=str, default="all",
-                   help="Which split to eval: train/valid_seen/valid_unseen/all (default: all)")
-    p.add_argument("--cfg-options", nargs="+", default=[],
-                   help="Override config: section.key=value")
+    p.add_argument("--skill", type=str, required=True, help="Path to skill .md file to evaluate")
+    p.add_argument(
+        "--split", type=str, default="all", help="Which split to eval: train/valid_seen/valid_unseen/all (default: all)"
+    )
+    p.add_argument("--cfg-options", nargs="+", default=[], help="Override config: section.key=value")
     # Legacy flat overrides
     p.add_argument("--env", type=str)
-    p.add_argument("--backend", type=str,
-                   choices=["azure_openai", "codex", "codex_exec", "claude", "claude_chat", "claude_code_exec"])
+    p.add_argument(
+        "--backend",
+        type=str,
+        choices=[
+            "azure_openai",
+            "codex",
+            "codex_exec",
+            "claude",
+            "claude_chat",
+            "claude_code_exec",
+            "copilot",
+            "copilot_cli",
+            "copilot_cli_exec",
+        ],
+    )
     p.add_argument("--optimizer_model", type=str)
     p.add_argument("--target_model", type=str)
     p.add_argument("--optimizer_backend", type=str)
     p.add_argument("--target_backend", type=str)
-    p.add_argument("--reasoning_effort", type=str,
-                   choices=["", "low", "medium", "high", "xhigh", "max"])
+    p.add_argument("--reasoning_effort", type=str, choices=["", "low", "medium", "high", "xhigh", "max"])
     p.add_argument("--azure_endpoint", type=str)
     p.add_argument("--azure_api_version", type=str)
     p.add_argument("--azure_api_key", type=str)
@@ -179,10 +200,15 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--claude_code_exec_use_sdk", type=str)
     p.add_argument("--claude_code_exec_effort", type=str)
     p.add_argument("--claude_code_exec_max_thinking_tokens", type=int)
+    p.add_argument("--copilot_cli_exec_path", type=str)
+    p.add_argument("--copilot_cli_exec_effort", type=str)
+    p.add_argument("--copilot_cli_exec_allow_all_tools", type=_BOOL)
+    p.add_argument("--copilot_cli_exec_allow_all_paths", type=_BOOL)
+    p.add_argument("--copilot_cli_exec_allow_all_urls", type=_BOOL)
+    p.add_argument("--copilot_cli_exec_agent", type=str)
     p.add_argument("--out_root", type=str)
     p.add_argument("--data_path", type=str)
-    p.add_argument("--split_mode", type=str,
-                   choices=["ratio", "split_dir"])
+    p.add_argument("--split_mode", type=str, choices=["ratio", "split_dir"])
     p.add_argument("--split_ratio", type=str)
     p.add_argument("--split_seed", type=int)
     p.add_argument("--split_dir", type=str)
@@ -193,25 +219,27 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--max_api_workers", type=int)
     p.add_argument("--seed", type=int)
     p.add_argument("--test_env_num", type=int)
-    p.add_argument("--mode", type=str,
-                   help="SpreadsheetBench: single/multi/react (default comes from config)")
+    p.add_argument("--mode", type=str, help="SpreadsheetBench: single/multi/react (default comes from config)")
     return p.parse_args()
 
 
 def main() -> None:
     args = parse_args()
 
-    from skillopt.config import load_config as _load, flatten_config, is_structured
+    from skillopt.config import flatten_config, is_structured
+    from skillopt.config import load_config as _load
 
     cfg = _load(args.config, overrides=args.cfg_options)
     structured = is_structured(cfg)
 
     # Apply legacy --key value overrides
-    cli = {k: v for k, v in vars(args).items()
-           if v is not None and k not in ("config", "skill", "split", "cfg_options")}
+    cli = {
+        k: v for k, v in vars(args).items() if v is not None and k not in ("config", "skill", "split", "cfg_options")
+    }
     if cli:
         if structured:
             from skillopt.config import apply_overrides
+
             _MAP = {
                 "backend": "model.backend",
                 "optimizer_model": "model.optimizer",
@@ -254,6 +282,12 @@ def main() -> None:
                 "claude_code_exec_use_sdk": "model.claude_code_exec_use_sdk",
                 "claude_code_exec_effort": "model.claude_code_exec_effort",
                 "claude_code_exec_max_thinking_tokens": "model.claude_code_exec_max_thinking_tokens",
+                "copilot_cli_exec_path": "model.copilot_cli_exec_path",
+                "copilot_cli_exec_effort": "model.copilot_cli_exec_effort",
+                "copilot_cli_exec_allow_all_tools": "model.copilot_cli_exec_allow_all_tools",
+                "copilot_cli_exec_allow_all_paths": "model.copilot_cli_exec_allow_all_paths",
+                "copilot_cli_exec_allow_all_urls": "model.copilot_cli_exec_allow_all_urls",
+                "copilot_cli_exec_agent": "model.copilot_cli_exec_agent",
                 "seed": "train.seed",
                 "test_env_num": "evaluation.test_env_num",
                 "env": "env.name",
@@ -311,6 +345,9 @@ def main() -> None:
         elif backend == "claude_code_exec":
             cfg.setdefault("optimizer_backend", "openai_chat")
             cfg.setdefault("target_backend", "claude_code_exec")
+        elif backend in {"copilot", "copilot_cli", "copilot_cli_exec", "github_copilot"}:
+            cfg.setdefault("optimizer_backend", "openai_chat")
+            cfg.setdefault("target_backend", "copilot_cli_exec")
         else:
             cfg.setdefault("optimizer_backend", "openai_chat")
             cfg.setdefault("target_backend", "openai_chat")
@@ -319,22 +356,19 @@ def main() -> None:
         cfg.setdefault("target_backend", "openai_chat")
 
     if cfg.get("optimizer_backend") == "claude_chat":
-        if (
-            str(cfg.get("optimizer_model", "") or "").strip() in _OPENAI_DEFAULT_MODEL_SENTINELS
-            and not _has_model_override("model.optimizer", "optimizer_model")
-        ):
+        if str(
+            cfg.get("optimizer_model", "") or ""
+        ).strip() in _OPENAI_DEFAULT_MODEL_SENTINELS and not _has_model_override("model.optimizer", "optimizer_model"):
             cfg["optimizer_model"] = default_model_for_backend("claude_chat")
     if cfg.get("target_backend") == "claude_chat":
-        if (
-            str(cfg.get("target_model", "") or "").strip() in _OPENAI_DEFAULT_MODEL_SENTINELS
-            and not _has_model_override("model.target", "target_model")
-        ):
+        if str(
+            cfg.get("target_model", "") or ""
+        ).strip() in _OPENAI_DEFAULT_MODEL_SENTINELS and not _has_model_override("model.target", "target_model"):
             cfg["target_model"] = default_model_for_backend("claude_chat")
     if cfg.get("target_backend") == "claude_code_exec":
-        if (
-            str(cfg.get("target_model", "") or "").strip() in _OPENAI_DEFAULT_MODEL_SENTINELS
-            and not _has_model_override("model.target", "target_model")
-        ):
+        if str(
+            cfg.get("target_model", "") or ""
+        ).strip() in _OPENAI_DEFAULT_MODEL_SENTINELS and not _has_model_override("model.target", "target_model"):
             cfg["target_model"] = default_model_for_backend("claude_chat")
 
     if not cfg.get("out_root"):
@@ -367,17 +401,13 @@ def main() -> None:
         optimizer_api_key=cfg.get("optimizer_azure_openai_api_key") or None,
         optimizer_auth_mode=cfg.get("optimizer_azure_openai_auth_mode") or None,
         optimizer_ad_scope=cfg.get("optimizer_azure_openai_ad_scope") or None,
-        optimizer_managed_identity_client_id=(
-            cfg.get("optimizer_azure_openai_managed_identity_client_id") or None
-        ),
+        optimizer_managed_identity_client_id=(cfg.get("optimizer_azure_openai_managed_identity_client_id") or None),
         target_endpoint=cfg.get("target_azure_openai_endpoint") or None,
         target_api_version=cfg.get("target_azure_openai_api_version") or None,
         target_api_key=cfg.get("target_azure_openai_api_key") or None,
         target_auth_mode=cfg.get("target_azure_openai_auth_mode") or None,
         target_ad_scope=cfg.get("target_azure_openai_ad_scope") or None,
-        target_managed_identity_client_id=(
-            cfg.get("target_azure_openai_managed_identity_client_id") or None
-        ),
+        target_managed_identity_client_id=(cfg.get("target_azure_openai_managed_identity_client_id") or None),
     )
     set_optimizer_backend(cfg.get("optimizer_backend", "openai_chat"))
     set_target_backend(cfg.get("target_backend", "openai_chat"))
@@ -401,6 +431,14 @@ def main() -> None:
         effort=cfg.get("claude_code_exec_effort", cfg.get("reasoning_effort", "medium")),
         max_thinking_tokens=cfg.get("claude_code_exec_max_thinking_tokens", 16384),
     )
+    configure_copilot_cli_exec(
+        path=cfg.get("copilot_cli_exec_path", "copilot"),
+        effort=cfg.get("copilot_cli_exec_effort", cfg.get("reasoning_effort", "medium")),
+        allow_all_tools=cfg.get("copilot_cli_exec_allow_all_tools", True),
+        allow_all_paths=cfg.get("copilot_cli_exec_allow_all_paths", False),
+        allow_all_urls=cfg.get("copilot_cli_exec_allow_all_urls", False),
+        agent=cfg.get("copilot_cli_exec_agent", ""),
+    )
     set_reasoning_effort(cfg.get("reasoning_effort", "") or None)
 
     # Build adapter
@@ -422,16 +460,16 @@ def main() -> None:
 
     print(f"\n  [eval] split={split}  items={len(items)}")
     print(f"  [eval] out_root={out_root}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     # Run rollout
     results = adapter.rollout(items, skill_content, out_root)
 
     # Score
     hard, soft = compute_score(results)
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"  Results: hard={hard:.4f}  soft={soft:.4f}  (n={len(results)})")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     # Save summary
     summary = {

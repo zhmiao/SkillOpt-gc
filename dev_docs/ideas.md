@@ -150,6 +150,24 @@ is a code-smell that will eventually mislead someone.
 in `backend_config.py`. Decide which when an upstream patch is being
 prepared, since it would be a small standalone fix.
 
+### CLEAN-3 — `docs/guide/new-backend.md` is a stale generic template
+
+**Where.** `docs/guide/new-backend.md` (130 lines).
+**What.** References file names that don't exist (`base.py`,
+`openai_model.py`, `claude.py`, `qwen.py`). The real modules are
+`azure_openai.py`, `claude_backend.py`, `qwen_backend.py`,
+`minimax_backend.py`, `codex_backend.py`, and now also
+`run_copilot_cli_exec` inside `codex_harness.py`. Surfaced while
+adding `COPILOT-1` — the guide can't be patched in place; it needs
+a rewrite against the real codebase shape.
+**Impact.** Anyone following the guide hits "file does not exist"
+errors. Public mkdocs site renders the stale content.
+**Action.** Rewrite against the real layout. Use the
+`backend_config.py` + per-vendor module + `codex_harness.py` exec
+dispatcher pattern as the canonical example. Reference the
+`copilot_cli_exec` slice as the most recent worked example.
+**Effort.** ~2 hours.
+
 ### CLEAN-1 — README references `configs/swebench/` but the directory does not exist
 
 **Where.** `docs/index.md:110` lists `configs/swebench/` under

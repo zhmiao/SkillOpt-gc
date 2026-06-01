@@ -60,53 +60,59 @@ Four parallel extraction streams dispatched as background agents
 - [x] User signed off after seeing 14 sample items spanning the top
       patterns (chat 2026-05-31).
 
-### Phase 1 — Backend (`COPILOT-1`, active now)
+### Phase 1 — Backend (`COPILOT-1`, DONE 2026-05-31)
 Scope: **target-side only** (per user `copilot_scope=target_only_first`).
 Optimizer-side support deferred to `COPILOT-2`.
 
 Per `dev_docs/design/copilot_integration_plan.md § A.1`, ~430 LOC
 across ~10 files mirroring the existing `claude_code_exec` pattern.
 
-- [ ] 1.1 — Per-backend constants + `configure_*` / `get_*` in
-      `skillopt/model/backend_config.py`. Add `COPILOT_CLI_EXEC_*`
+- [x] 1.1 — Per-backend constants + `configure_*` / `get_*` in
+      `skillopt/model/backend_config.py`. Added `COPILOT_CLI_EXEC_*`
       env-backed vars, `configure_copilot_cli_exec()`,
       `get_copilot_cli_exec_config()`.
-- [ ] 1.2 — Validation set + alias + default model:
+- [x] 1.2 — Validation set + alias + default model:
       `backend_config.py:set_target_backend` allow-list,
       `is_target_exec_backend` set, `common.py:_BACKEND_DEFAULT_MODELS`
       (default = `claude-opus-4.7-1m-internal` per user — fork-only),
-      `common.py:_BACKEND_ALIASES`.
-- [ ] 1.3 — Harness implementation in `skillopt/model/codex_harness.py`:
-      add `run_copilot_cli_exec(...)` modeled on `run_claude_code_exec`.
-      CLI-only path (no SDK — copilot doesn't ship one yet).
-- [ ] 1.4 — Dispatcher: add `if backend == "copilot_cli_exec":` branch
-      in `codex_harness.py:run_target_exec`.
-- [ ] 1.5 — Public re-exports in `skillopt/model/__init__.py`:
+      `common.py:_BACKEND_ALIASES` (adds `copilot`, `copilot_cli`,
+      `github_copilot` → `copilot_cli_exec`).
+- [x] 1.3 — Harness implementation in `skillopt/model/codex_harness.py`:
+      added `_build_copilot_trace_summary`, `_persist_copilot_artifacts`,
+      `_run_copilot_cli_exec`, `run_copilot_cli_exec`. CLI-only path
+      (no SDK — see `dev_docs/decisions.md`).
+- [x] 1.4 — Dispatcher: added `if backend == "copilot_cli_exec":`
+      branch in `codex_harness.py:run_target_exec`.
+- [x] 1.5 — Public re-exports in `skillopt/model/__init__.py`:
       `configure_copilot_cli_exec`, `get_copilot_cli_exec_config`.
-- [ ] 1.6 — Config flatten map in `skillopt/config.py:_FLATTEN_MAP`:
-      `model.copilot_cli_exec_path`, `_effort`, `_allow_all_tools`,
-      `_session_state_root`, `_model`.
-- [ ] 1.7 — Defaults YAML: add `copilot_cli_exec_*` block to
+- [x] 1.6 — Config flatten map in `skillopt/config.py:_FLATTEN_MAP`:
+      6 new `model.copilot_cli_exec_*` keys.
+- [x] 1.7 — Defaults YAML: added `copilot_cli_exec_*` block to
       `configs/_base_/default.yaml`.
-- [ ] 1.8 — Trainer wiring: `skillopt/engine/trainer.py:599` (backend
-      resolution) + `:625` (`configure_*` calls).
-- [ ] 1.9 — Eval-only wiring: same as trainer for
-      `scripts/eval_only.py`.
-- [ ] 1.10 — Env template: add `# ── GitHub Copilot CLI` block to
-      `.env.example`.
-- [ ] 1.11 — Smoke test: round-trip `copilot -p "say hello"
-      --allow-all-tools` through the harness via a tiny standalone
-      Python script. Output must be non-empty and the harness must
-      not raise.
-- [ ] 1.12 — Public docs: update `docs/guide/new-backend.md` and
-      `README.md` Configure-API-Credentials section with the new
-      backend. **Skip the fork-only default model in the public docs**
-      (use `claude-sonnet-4.5` or `gpt-5.5` example there).
-- [ ] 1.13 — Internal docs: update
-      `dev_docs/architecture_overview.md § Backend matrix` with the
-      new row. Add `dev_docs/decisions.md` entry for the
-      CLI-only-no-SDK choice.
-- [ ] 1.14 — Commit and pause for user before Phase 2.
+- [x] 1.8 — Trainer wiring: `skillopt/engine/trainer.py` import,
+      backend resolution (`copilot`/`copilot_cli`/`copilot_cli_exec`/
+      `github_copilot` aliases), and `configure_copilot_cli_exec(...)`
+      call.
+- [x] 1.9 — Eval-only wiring: `scripts/eval_only.py` import, CLI
+      `--backend` choices, 6 new CLI flags, cfg-key map, backend
+      dispatch, configure call.
+- [x] 1.10 — Env template: `.env.example` Copilot CLI block.
+- [x] 1.11 — Smoke test: `scripts/smoke_copilot_cli_exec.py` ran the
+      real `copilot -p "say hello"` through the harness end-to-end.
+      Returned "hello" in ~5s, exit 0, artifacts persisted.
+      **STATUS: PASS**.
+- [x] 1.12 — Public docs: README "Configure API Credentials" section
+      gets a GitHub Copilot CLI subsection mirroring the MiniMax
+      pattern. Uses `claude-sonnet-4.5` as the public example model
+      (fork-only default `claude-opus-4.7-1m-internal` not surfaced
+      publicly). `docs/guide/new-backend.md` is stale and NOT touched
+      here — filed as `CLEAN-3` for a separate rewrite.
+- [x] 1.13 — Internal docs: `dev_docs/architecture_overview.md`
+      backend matrix updated with copilot row.
+      `dev_docs/decisions.md` got the CLI-only-no-SDK choice entry.
+- [x] 1.14 — Commit. Done in chore/dev-docs-scaffold branch.
+
+User sign-off needed before Phase 2.
 
 ### Phase 2 — First env (`COPILOT-3` stop_slop)
 _Pending Phase 1 sign-off._

@@ -20,6 +20,43 @@
 
 ---
 
+## 2026-05-31 — `copilot_cli_exec` ships CLI-only; no SDK path
+
+**Context.** The existing `codex_exec` and `claude_code_exec` backends
+support a `use_sdk = "auto" | "sdk" | "cli"` knob so they can call
+`openai-codex-sdk` / `claude-agent-sdk` Python clients in-process,
+falling back to subprocess CLI if the SDK is missing.
+
+**Options considered.**
+1. Mirror the same `use_sdk` knob and stub the SDK path.
+2. CLI-only — no `use_sdk` knob; always `subprocess.run(copilot -p ...)`.
+
+**Decision.** Option 2 — CLI-only.
+
+**Why.**
+- GitHub Copilot CLI v1.0.57 (the version available on this machine)
+  does not ship a Python SDK. `npm view @github/copilot-cli` shows
+  only the CLI binary; there is no `import copilot_sdk` equivalent
+  to `claude_agent_sdk` or `openai_codex_sdk`.
+- Stubbing a non-existent SDK path adds dead code and a misleading
+  `use_sdk` flag that does nothing.
+
+**Trade-offs / costs.**
+- CLI subprocess overhead per rollout (~hundreds of ms for process
+  startup) vs in-process SDK calls. Acceptable for SkillOpt rollouts
+  — the model call itself dominates.
+- If Copilot ships an SDK later, we'll add the `use_sdk` knob then.
+  The current `run_copilot_cli_exec` wrapper has the right shape to
+  add an SDK branch without breaking the public signature.
+
+**Code refs.**
+- `skillopt/model/codex_harness.py:run_copilot_cli_exec` (CLI-only
+  retry loop; docstring notes the no-SDK choice).
+- `skillopt/model/backend_config.py:configure_copilot_cli_exec` (no
+  `use_sdk` parameter, unlike `configure_claude_code_exec`).
+
+---
+
 ## 2026-05-31 — `stop_slop` dataset source: `HumanEmbedding` repo
 
 **Context.** The first SkillOpt-optimized copilot skill is

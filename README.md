@@ -113,6 +113,34 @@ export MINIMAX_API_KEY="..."
 export MINIMAX_MODEL="MiniMax-M2.7"
 ```
 
+#### GitHub Copilot CLI *(agentic harness)*
+
+Use the [`copilot` CLI](https://docs.github.com/copilot/how-tos/copilot-cli)
+as a target-side agentic harness, analogous to `codex_exec` /
+`claude_code_exec`. Authentication is handled by the CLI itself (run
+`copilot` once interactively to authenticate); no env vars are
+required for credentials.
+
+```bash
+# Install: see https://docs.github.com/copilot/how-tos/copilot-cli
+# Optional overrides (configs/_base_/default.yaml ships sensible defaults):
+export COPILOT_CLI_EXEC_PATH="copilot"      # or absolute path
+export COPILOT_CLI_EXEC_EFFORT="medium"     # none|low|medium|high|xhigh|max
+export COPILOT_CLI_EXEC_ALLOW_ALL_TOOLS="true"  # required for unattended rollouts
+```
+
+Then point your target backend at it:
+
+```bash
+python scripts/train.py --config configs/searchqa/default.yaml \
+    --target_backend copilot_cli_exec \
+    --target_model claude-sonnet-4.5
+```
+
+The `--model` value is passed straight through to `copilot --model`;
+run `copilot --help` to see what your account supports. The harness
+runs in CLI mode only — Copilot does not ship an SDK as of v1.0.57.
+
 ---
 
 ## Quick Start

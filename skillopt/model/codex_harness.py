@@ -1,4 +1,5 @@
 """Helpers for running exec backends as the target harness."""
+
 from __future__ import annotations
 
 import asyncio
@@ -14,9 +15,9 @@ from typing import Any
 from skillopt.model.backend_config import (
     get_claude_code_exec_config,
     get_codex_exec_config,
+    get_copilot_cli_exec_config,
     get_target_backend,
 )
-
 
 ANSWER_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -55,12 +56,14 @@ def render_skill_md(
     if preamble.strip():
         chunks.append(preamble.strip())
         chunks.append("")
-    chunks.extend([
-        "## Dynamic Guidance",
-        "",
-        body,
-        "",
-    ])
+    chunks.extend(
+        [
+            "## Dynamic Guidance",
+            "",
+            body,
+            "",
+        ]
+    )
     return "\n".join(chunks)
 
 
@@ -147,7 +150,7 @@ def _build_codex_trace_summary(raw: str, response: str) -> str:
     def _find(prefix: str) -> str:
         for ln in lines:
             if ln.startswith(prefix):
-                return ln[len(prefix):].strip()
+                return ln[len(prefix) :].strip()
         return ""
 
     sandbox = _find("sandbox: ")
@@ -173,7 +176,7 @@ def _build_codex_trace_summary(raw: str, response: str) -> str:
                 elif "failed" in outcome or "ERROR" in outcome:
                     skill_read = "failed"
         if ln.startswith("ERROR:"):
-            exec_errors.append(ln[len("ERROR:"):].strip())
+            exec_errors.append(ln[len("ERROR:") :].strip())
         if ln == "tokens used" and idx + 1 < len(lines):
             tokens_used = lines[idx + 1].strip()
 
@@ -268,6 +271,41 @@ def _persist_claude_artifacts(work_dir: str, raw: str, response: str) -> None:
         response=response,
         prefix="claude",
         summary_builder=_build_claude_trace_summary,
+    )
+
+
+def _build_copilot_trace_summary(raw: str, response: str) -> str:
+    """Per-rollout summary written next to the raw transcript.
+
+    Mirrors :func:`_build_claude_trace_summary`. Copilot CLI's
+    non-interactive output is free-form text by default; we surface
+    whether an ``<answer>...</answer>`` tag is present plus any
+    error-shaped lines from the transcript.
+    """
+    answer_format = "missing"
+    if "<answer>" in (response or "").lower():
+        answer_format = "tagged"
+    elif (response or "").strip():
+        answer_format = "plain_text"
+    errors: list[str] = []
+    for ln in (raw or "").splitlines():
+        if "error" in ln.lower() or "traceback" in ln.lower():
+            errors.append(ln.strip())
+        if len(errors) >= 3:
+            break
+    parts = ["Copilot CLI Trace Summary", f"- final answer format: {answer_format}"]
+    parts.append(f"- final response chars: {len(response or '')}")
+    parts.append(f"- errors: {' | '.join(errors) if errors else 'none'}")
+    return "\n".join(parts)
+
+
+def _persist_copilot_artifacts(work_dir: str, raw: str, response: str) -> None:
+    _persist_artifacts(
+        work_dir=work_dir,
+        raw=raw,
+        response=response,
+        prefix="copilot",
+        summary_builder=_build_copilot_trace_summary,
     )
 
 
@@ -557,13 +595,15 @@ def _extract_claude_structured_output(messages: list[Any]) -> Any:
 
 
 def _raw_exception(label: str, exc: BaseException) -> str:
-    return _json_dumps({
-        "backend": label,
-        "is_error": True,
-        "error_type": type(exc).__name__,
-        "error": str(exc),
-        "traceback": traceback.format_exc(),
-    })
+    return _json_dumps(
+        {
+            "backend": label,
+            "is_error": True,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+            "traceback": traceback.format_exc(),
+        }
+    )
 
 
 def _run_claude_code_sdk_exec(
@@ -627,23 +667,27 @@ def _run_claude_code_sdk_exec(
         first = messages[0] if messages else None
         first_data = getattr(first, "data", {}) if first is not None else {}
         terminal_is_error = bool(getattr(last, "is_error", False)) if last is not None else False
-        raw = _json_dumps({
-            "backend": "claude_code_sdk",
-            "uuid": first_data.get("uuid", "") if isinstance(first_data, dict) else "",
-            "session_id": getattr(last, "session_id", "") if last is not None else "",
-            "model": first_data.get("model", model) if isinstance(first_data, dict) else model,
-            "tools": first_data.get("tools", _tools_list(allowed_tools)) if isinstance(first_data, dict) else _tools_list(allowed_tools),
-            "duration_ms": getattr(last, "duration_ms", 0) if last is not None else 0,
-            "total_cost_usd": getattr(last, "total_cost_usd", 0.0) if last is not None else 0.0,
-            "num_turns": getattr(last, "num_turns", 0) if last is not None else 0,
-            "usage": getattr(last, "usage", {}) if last is not None else {},
-            "result": getattr(last, "result", "") if last is not None else "",
-            "is_error": bool(parse_error) or (terminal_is_error and not response.strip()),
-            "terminal_is_error": terminal_is_error,
-            "parse_error": parse_error,
-            "raw_structured_output": raw_structured_output,
-            "messages": messages,
-        })
+        raw = _json_dumps(
+            {
+                "backend": "claude_code_sdk",
+                "uuid": first_data.get("uuid", "") if isinstance(first_data, dict) else "",
+                "session_id": getattr(last, "session_id", "") if last is not None else "",
+                "model": first_data.get("model", model) if isinstance(first_data, dict) else model,
+                "tools": first_data.get("tools", _tools_list(allowed_tools))
+                if isinstance(first_data, dict)
+                else _tools_list(allowed_tools),
+                "duration_ms": getattr(last, "duration_ms", 0) if last is not None else 0,
+                "total_cost_usd": getattr(last, "total_cost_usd", 0.0) if last is not None else 0.0,
+                "num_turns": getattr(last, "num_turns", 0) if last is not None else 0,
+                "usage": getattr(last, "usage", {}) if last is not None else {},
+                "result": getattr(last, "result", "") if last is not None else "",
+                "is_error": bool(parse_error) or (terminal_is_error and not response.strip()),
+                "terminal_is_error": terminal_is_error,
+                "parse_error": parse_error,
+                "raw_structured_output": raw_structured_output,
+                "messages": messages,
+            }
+        )
         return response, raw
 
     return _run_async(asyncio.wait_for(_query(), timeout=timeout))
@@ -849,18 +893,20 @@ def _run_codex_sdk_exec(
                 parse_error = f"{type(exc).__name__}: {exc}"
         else:
             parse_error = "No response from Codex SDK (final_response is empty)."
-        raw = _json_dumps({
-            "backend": "codex_sdk",
-            "id": getattr(turn, "id", ""),
-            "thread_id": getattr(turn, "thread_id", ""),
-            "model": model,
-            "thread_options": thread_options,
-            "final_response": result_text,
-            "raw_structured_output": parsed,
-            "parse_error": parse_error,
-            "is_error": bool(parse_error),
-            "items": getattr(turn, "items", []),
-        })
+        raw = _json_dumps(
+            {
+                "backend": "codex_sdk",
+                "id": getattr(turn, "id", ""),
+                "thread_id": getattr(turn, "thread_id", ""),
+                "model": model,
+                "thread_options": thread_options,
+                "final_response": result_text,
+                "raw_structured_output": parsed,
+                "parse_error": parse_error,
+                "is_error": bool(parse_error),
+                "items": getattr(turn, "items", []),
+            }
+        )
         return response, raw
 
     return _run_async(asyncio.wait_for(_query(), timeout=timeout))
@@ -926,6 +972,7 @@ def _run_codex_cli_exec(
         raise
     try:
         from skillopt.model import azure_openai as _openai
+
         _openai.tracker.record("rollout", 0, 0)
     except Exception:
         pass
@@ -941,9 +988,7 @@ def _run_codex_cli_exec(
     if proc.returncode != 0:
         _persist_codex_artifacts(work_dir, raw, last_message)
         detail = (stderr or stdout).strip()
-        raise RuntimeError(
-            f"codex exec failed with exit code {proc.returncode}: {detail[:4000]}"
-        )
+        raise RuntimeError(f"codex exec failed with exit code {proc.returncode}: {detail[:4000]}")
     return last_message, raw
 
 
@@ -1054,4 +1099,141 @@ def run_target_exec(
             permission_mode=permission_mode,
             allow_file_edits=allow_file_edits,
         )
+    if backend == "copilot_cli_exec":
+        return run_copilot_cli_exec(
+            work_dir=work_dir,
+            prompt=prompt,
+            model=model,
+            timeout=timeout,
+            images=images,
+            data_dirs=data_dirs,
+            allow_file_edits=allow_file_edits,
+        )
     raise ValueError(f"Unsupported exec backend: {backend}")
+
+
+# ── GitHub Copilot CLI target backend ────────────────────────────────────────
+
+
+def _run_copilot_cli_exec(
+    *,
+    work_dir: str,
+    prompt: str,
+    model: str,
+    timeout: int,
+    images: list[str] | None = None,
+    data_dirs: list[str] | None = None,
+    allow_file_edits: bool = False,
+) -> tuple[str, str]:
+    """One non-interactive ``copilot -p`` invocation. Returns (response, raw_log).
+
+    Mirrors :func:`_run_claude_code_cli_exec`. Copilot CLI does not have a
+    ``--cwd`` flag, so we ``cd`` via ``subprocess.run(cwd=work_dir)`` and
+    additionally pass ``--add-dir work_dir`` so the agent has explicit path
+    permission.
+    """
+    config = get_copilot_cli_exec_config()
+    cmd: list[str] = [
+        str(config["path"]),
+        "-p",
+        _exec_prompt(prompt, allow_file_edits=allow_file_edits),
+        "--add-dir",
+        _validate_exec_path(work_dir),
+        "--no-color",
+    ]
+    if config.get("allow_all_tools", True):
+        cmd.append("--allow-all-tools")
+    if config.get("allow_all_paths", False):
+        cmd.append("--allow-all-paths")
+    if config.get("allow_all_urls", False):
+        cmd.append("--allow-all-urls")
+    effort = _claude_effort(config.get("effort"))
+    if effort:
+        cmd.extend(["--effort", effort])
+    if model:
+        cmd.extend(["--model", model])
+    agent = str(config.get("agent") or "").strip()
+    if agent:
+        cmd.extend(["--agent", agent])
+    for data_dir in data_dirs or []:
+        cmd.extend(["--add-dir", _validate_exec_path(data_dir)])
+    if images:
+        for image in images:
+            img_path = _validate_exec_path(image)
+            cmd.extend(["--attachment", img_path])
+
+    try:
+        proc = subprocess.run(
+            cmd,
+            cwd=work_dir,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout or ""
+        stderr = exc.stderr or ""
+        raw = stdout
+        if stderr:
+            raw = f"{raw}\n[stderr]\n{stderr}" if raw else stderr
+        return "", raw
+
+    stdout = proc.stdout or ""
+    stderr = proc.stderr or ""
+    raw = stdout
+    if stderr:
+        raw = f"{raw}\n[stderr]\n{stderr}" if raw else stderr
+    response = stdout.strip()
+    if proc.returncode != 0 and not response:
+        return "", raw
+    return response, raw
+
+
+def run_copilot_cli_exec(
+    *,
+    work_dir: str,
+    prompt: str,
+    model: str,
+    timeout: int,
+    images: list[str] | None = None,
+    data_dirs: list[str] | None = None,
+    allow_file_edits: bool = False,
+) -> tuple[str, str]:
+    """Run a Copilot CLI rollout with empty-response retries.
+
+    Public dispatcher entry point. The retry loop mirrors
+    :func:`run_claude_code_exec`: re-prompt up to
+    ``EXEC_EMPTY_RESPONSE_RETRIES`` times if the CLI returns an empty
+    assistant message. Persists raw + summary under
+    ``<work_dir>/../copilot_raw.txt`` and ``copilot_trace_summary.txt``.
+
+    Note: Copilot CLI does not ship an SDK as of v1.0.57. If an SDK
+    becomes available, mirror the ``use_sdk`` knob from
+    :func:`run_claude_code_exec`.
+    """
+    config = get_copilot_cli_exec_config()
+    retries = int(config.get("empty_response_retries", 0) or 0)
+    last_response = ""
+    all_raw: list[str] = []
+
+    for attempt in range(retries + 1):
+        attempt_prompt = _retry_prompt(prompt, attempt)
+        response, raw = _run_copilot_cli_exec(
+            work_dir=work_dir,
+            prompt=attempt_prompt,
+            model=model,
+            timeout=timeout,
+            images=images,
+            data_dirs=data_dirs,
+            allow_file_edits=allow_file_edits,
+        )
+        all_raw.append(f"===== COPILOT CLI ATTEMPT {attempt + 1} =====\n{raw}")
+        last_response = response
+        if response.strip():
+            combined = "\n\n".join(all_raw)
+            _persist_copilot_artifacts(work_dir, combined, response)
+            return response, combined
+
+    combined = "\n\n".join(all_raw)
+    _persist_copilot_artifacts(work_dir, combined, last_response)
+    return last_response, combined

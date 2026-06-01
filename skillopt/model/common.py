@@ -1,11 +1,11 @@
 """Shared model utilities for ReflACT backends."""
+
 from __future__ import annotations
 
 import json
 import threading
 from dataclasses import dataclass, field
 from typing import Any
-
 
 _RESPONSES_API_MODELS = {
     "gpt-5.3-codex",
@@ -26,6 +26,7 @@ _BACKEND_DEFAULT_MODELS = {
     "claude_code_exec": "claude-sonnet-4-6",
     "qwen_chat": "Qwen/Qwen3.5-4B",
     "minimax_chat": "MiniMax-M2.7",
+    "copilot_cli_exec": "claude-opus-4.7-1m-internal",
 }
 
 _BACKEND_ALIASES = {
@@ -44,6 +45,10 @@ _BACKEND_ALIASES = {
     "qwen_chat": "qwen_chat",
     "minimax": "minimax_chat",
     "minimax_chat": "minimax_chat",
+    "copilot": "copilot_cli_exec",
+    "copilot_cli": "copilot_cli_exec",
+    "copilot_cli_exec": "copilot_cli_exec",
+    "github_copilot": "copilot_cli_exec",
 }
 
 
@@ -61,10 +66,7 @@ def default_model_for_backend(backend: str | None) -> str:
 
 def needs_responses_api(model: str) -> bool:
     normalized = str(model or "").strip().lower()
-    return any(
-        normalized == prefix or normalized.startswith(prefix + "-")
-        for prefix in _RESPONSES_API_MODELS
-    )
+    return any(normalized == prefix or normalized.startswith(prefix + "-") for prefix in _RESPONSES_API_MODELS)
 
 
 class TokenTracker:

@@ -24,6 +24,12 @@ model:
   claude_code_exec_use_sdk: auto
   claude_code_exec_effort: medium
   claude_code_exec_max_thinking_tokens: 16384
+  copilot_cli_exec_path: copilot
+  copilot_cli_exec_effort: medium
+  copilot_cli_exec_allow_all_tools: true
+  copilot_cli_exec_allow_all_paths: false
+  copilot_cli_exec_allow_all_urls: false
+  copilot_cli_exec_agent: ""
   codex_trace_to_optimizer: true
   azure_openai_endpoint: ""           # e.g. "https://your-resource.openai.azure.com/"
   azure_openai_api_version: "2024-12-01-preview"

@@ -12,6 +12,7 @@ Usage::
     cfg = load_config("configs/searchqa_default.yaml")
     flat = flatten_config(cfg)  # always returns flat dict for trainer
 """
+
 from __future__ import annotations
 
 import copy
@@ -22,9 +23,16 @@ import yaml
 
 # ── Section names that indicate a structured config ──────────────────────
 
-_STRUCTURED_SECTIONS = frozenset({
-    "model", "train", "gradient", "optimizer", "evaluation", "env",
-})
+_STRUCTURED_SECTIONS = frozenset(
+    {
+        "model",
+        "train",
+        "gradient",
+        "optimizer",
+        "evaluation",
+        "env",
+    }
+)
 
 # ── Structured → flat key mapping ────────────────────────────────────────
 
@@ -51,6 +59,12 @@ _FLATTEN_MAP: dict[str, str] = {
     "model.claude_code_exec_use_sdk": "claude_code_exec_use_sdk",
     "model.claude_code_exec_effort": "claude_code_exec_effort",
     "model.claude_code_exec_max_thinking_tokens": "claude_code_exec_max_thinking_tokens",
+    "model.copilot_cli_exec_path": "copilot_cli_exec_path",
+    "model.copilot_cli_exec_effort": "copilot_cli_exec_effort",
+    "model.copilot_cli_exec_allow_all_tools": "copilot_cli_exec_allow_all_tools",
+    "model.copilot_cli_exec_allow_all_paths": "copilot_cli_exec_allow_all_paths",
+    "model.copilot_cli_exec_allow_all_urls": "copilot_cli_exec_allow_all_urls",
+    "model.copilot_cli_exec_agent": "copilot_cli_exec_agent",
     "model.codex_trace_to_optimizer": "codex_trace_to_optimizer",
     "model.azure_endpoint": "azure_endpoint",
     "model.azure_api_version": "azure_api_version",
@@ -121,6 +135,7 @@ _FLATTEN_MAP: dict[str, str] = {
 
 # ── Deep merge ───────────────────────────────────────────────────────────
 
+
 def _deep_merge(base: dict, override: dict) -> dict:
     """Recursively merge *override* into *base* (returns new dict)."""
     result = copy.deepcopy(base)
@@ -133,6 +148,7 @@ def _deep_merge(base: dict, override: dict) -> dict:
 
 
 # ── YAML loading with _base_ inheritance ─────────────────────────────────
+
 
 def _load_yaml(path: str, _visited: set[str] | None = None) -> dict:
     """Load a YAML file, resolving ``_base_`` inheritance recursively."""
@@ -157,15 +173,14 @@ def _load_yaml(path: str, _visited: set[str] | None = None) -> dict:
 
 # ── Format detection ─────────────────────────────────────────────────────
 
+
 def is_structured(cfg: dict) -> bool:
     """Return True if *cfg* uses the new structured section format."""
-    return any(
-        key in _STRUCTURED_SECTIONS and isinstance(cfg.get(key), dict)
-        for key in cfg
-    )
+    return any(key in _STRUCTURED_SECTIONS and isinstance(cfg.get(key), dict) for key in cfg)
 
 
 # ── Flatten ──────────────────────────────────────────────────────────────
+
 
 def flatten_config(cfg: dict) -> dict:
     """Convert a structured config to the flat dict expected by the trainer.
@@ -180,8 +195,7 @@ def flatten_config(cfg: dict) -> dict:
     evaluation_section = cfg.get("evaluation", {})
     if isinstance(evaluation_section, dict) and evaluation_section.get("use_gate") is False:
         raise ValueError(
-            "Gate validation is mandatory in this branch. Remove "
-            "`evaluation.use_gate: false` from the config."
+            "Gate validation is mandatory in this branch. Remove `evaluation.use_gate: false` from the config."
         )
 
     # Apply the explicit mapping
@@ -194,11 +208,7 @@ def flatten_config(cfg: dict) -> dict:
     # Pass through env-specific keys not in the explicit mapping
     env_section = cfg.get("env", {})
     if isinstance(env_section, dict):
-        mapped_env_keys = {
-            k.split(".", 1)[1]
-            for k in _FLATTEN_MAP
-            if k.startswith("env.")
-        }
+        mapped_env_keys = {k.split(".", 1)[1] for k in _FLATTEN_MAP if k.startswith("env.")}
         for key, val in env_section.items():
             if key not in mapped_env_keys:
                 flat[key] = val
@@ -207,6 +217,7 @@ def flatten_config(cfg: dict) -> dict:
 
 
 # ── Override application ─────────────────────────────────────────────────
+
 
 def _cast_value(val_str: str) -> Any:
     """Auto-cast a CLI string value to int / float / bool / str."""
@@ -249,6 +260,7 @@ def apply_overrides(cfg: dict, overrides: list[str]) -> None:
 
 
 # ── Public API ───────────────────────────────────────────────────────────
+
 
 def load_config(
     path: str,

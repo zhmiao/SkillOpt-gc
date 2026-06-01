@@ -200,6 +200,7 @@ configs are being cleaned + released gradually (per the README
 | `minimax_chat` | MiniMax REST API | target | `minimax_backend.py` |
 | `codex_exec` | `codex` CLI (agentic harness) | target only | `codex_backend.py` (+ `codex_harness.py`) |
 | `claude_code_exec` | `claude` CLI (agentic harness) | target only | configured via `backend_config.py` |
+| `copilot_cli_exec` | `copilot` CLI (GitHub Copilot CLI agentic harness) | target only | `codex_harness.py:run_copilot_cli_exec` (added 2026-05-31, COPILOT-1) |
 
 Optimizer and target backends are independent — the common
 production split is `optimizer_backend=openai_chat` +

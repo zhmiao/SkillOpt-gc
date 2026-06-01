@@ -11,15 +11,17 @@ from skillopt.model import qwen_backend as _qwen
 from skillopt.model.backend_config import (  # noqa: F401
     configure_claude_code_exec,
     configure_codex_exec,
+    configure_copilot_cli_exec,
     get_claude_code_exec_config,
     get_codex_exec_config,
-    get_target_backend,
+    get_copilot_cli_exec_config,
     get_optimizer_backend,
+    get_target_backend,
+    is_optimizer_chat_backend,
     is_target_chat_backend,
     is_target_exec_backend,
-    is_optimizer_chat_backend,
-    set_target_backend,
     set_optimizer_backend,
+    set_target_backend,
 )
 
 
