@@ -224,14 +224,71 @@ training cycle (or at least a dry run) on Copilot-only mode and
 confirmed nothing broke. `codex_harness.py` stays — it contains the
 Copilot-only path.
 
-### Phase 4 — First training run (pending user sign-off)
-_Pending Phase 3 sign-off._
+### Phase 4 — First training run (DONE 2026-06-01)
+End-to-end training of stop_slop on Copilot-only mode against
+`claude-opus-4.7-1m-internal` for both optimizer and target.
 
-This is the explicit pause point per Option A. Will not start
-without user "go".
+**Setup:** `configs/stop_slop/default.yaml` defaults (4 epochs × 38
+steps × batch_size=16), full 151-item train pool, full 50-item val
+gate, `--copilot_cli_exec_effort none`.
 
-### Phase 5+ — Second env onward
+**Wall clock:** 21442s = 5h 57min.
+**Total Copilot CLI calls:** 2491 (target rollouts + optimizer +
+LLM judge, all routed through copilot_cli_exec).
+
+**Headline result:** held-out test hard score
+**0.2549 → 0.4706 (+21.57 absolute points)** — 13/51 baseline vs
+24/51 best-skill on the test split. Selection-set gate peaked at
+0.6600 (33/50) at step 13 of epoch 2 and stayed there for the
+remaining 27 steps (4 accepts total across all 40 steps).
+
+**Per-epoch accept/reject:**
+
+| Epoch | Accepts | Rejects | Best after |
+|---|---:|---:|---:|
+| 1 | 3 | 7 | 0.5000 |
+| 2 | 1 | 9 | 0.6600 (step 13) |
+| 3 | 0 | 10 | 0.6600 (plateau) |
+| 4 | 0 | 10 | 0.6600 (plateau) |
+
+**Trained skill artifact:** `outputs/skills/stop_slop/claude-opus-4.7-1m-internal_20260601_144448/best_skill.md` — 27514 chars (vs 2629 chars initial). Now contains pattern-specific recipes, fix-priority ordering, and a 14-item pre-ship checklist. The skill went from generic "remove AI patterns" rules to a domain-specific playbook keyed against the 57-pattern canonical catalog.
+
+**What worked:**
+- All four COPILOT-1/2/3 + Phase 2 + Phase 3 components ran in
+  concert without crashes for 6 hours.
+- The analyst produced meaningful patches (4 accept-worthy in 40
+  steps).
+- The gate correctly rejected 36 candidates that didn't improve.
+- Slow-update force-injected guidance that grew the skill from
+  ~12KB (peak step-level acceptance) to 27KB (peak with slow-update
+  guidance accumulated across epochs).
+- LLM-judge cache: 571 hits / 2283 misses — caching across the 2491
+  calls saved ~25% of judge calls.
+
+**Open observations for the next run:**
+- The plateau in epochs 3-4 suggests either the optimizer hit a
+  local maximum given the current dataset / pattern catalog, OR
+  the gate-strict-hard semantics rejected real improvements
+  because the val set is only 50 items (each item flip = 2-point
+  step change).
+- Test improvement (+21.57) > val plateau movement after step 13
+  (+0%) — the held-out test gained more than the gate-tracked val,
+  suggesting the slow-update guidance generalizes better than
+  step-level edits.
+- 13 hours estimated -> 6 hours actual. Target rollouts on Opus
+  averaged ~4s each; the bottleneck is reflect (30-130s per call).
+
+### Phase 5 — What's next (pending user direction)
 _Per user direction at end of Phase 4._
+
+Possible next steps surfaced by the run:
+- Phase 3.5 — delete legacy backend modules now that Copilot-only
+  is proven (per `backend_modules_fate=delete_after_smoke`).
+- Adopt the trained skill: copy `best_skill.md` into
+  `~/.copilot/skills/stop-slop/SKILL.md` (with version control).
+- Tune for a second run (longer training? bigger sel set? `soft`
+  gate? autonomous LR?).
+- Move to the next Tier-A skill (`ascii_align`).
 
 ## Backlog (high level)
 
