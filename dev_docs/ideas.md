@@ -23,7 +23,7 @@ ID prefixes:
 See `dev_docs/design/copilot_integration_plan.md` for the full
 design. The IDs below are the implementable slices.
 
-### COPILOT-1 — Target backend: `copilot_cli_exec` (CLI mode)
+### COPILOT-1 — Target backend: `copilot_cli_exec` (CLI mode) — DONE 2026-05-31 (`e6451b5`)
 
 **Where.** `skillopt/model/backend_config.py`, `codex_harness.py`,
 `common.py`, `config.py`, `engine/trainer.py`, `scripts/eval_only.py`,
@@ -38,7 +38,7 @@ ascii-align, etc.) since those skills depend on copilot's
 `run_claude_code_exec`.
 **Related.** Part A.1 of the integration plan; blocks COPILOT-3..9.
 
-### COPILOT-2 — Optimizer-side `copilot_cli_exec` (deferred)
+### COPILOT-2 — Optimizer-side `copilot_cli_exec` — DONE 2026-06-01 (`861fbf7`)
 
 **Where.** Same module set as COPILOT-1, plus
 `skillopt/model/__init__.py:chat_optimizer*`.
@@ -52,7 +52,7 @@ useful when only copilot is available, but not blocking anything.
 need.
 **Related.** Part A.2 of the integration plan.
 
-### COPILOT-3 — `stop_slop` env adapter
+### COPILOT-3 — `stop_slop` env adapter — DONE 2026-06-01 (`c0f180f`)
 
 **Where.** New `skillopt/envs/stop_slop/{adapter,dataloader,rollout,reflect}.py`,
 `skillopt/envs/stop_slop/skills/initial.md`,
@@ -118,7 +118,7 @@ Minutes per item.
 **Status.** Research-grade. Defer until Tier A+B prove the pipeline
 and we know what we're paying for. May not be worth it for some.
 
-### COPILOT-9 — `outputs/` reorganization for skill experiments
+### COPILOT-9 — `outputs/` reorganization for skill experiments — DONE 2026-06-01 (`c0f180f`)
 
 **Where.** `skillopt/engine/trainer.py:_resolve_out_root` (or
 wherever `out_root` is finalized).

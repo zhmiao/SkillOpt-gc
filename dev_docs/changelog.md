@@ -21,6 +21,77 @@ pick up.
 
 ---
 
+## 2026-06-01 — Copilot-only SkillOpt + first trained skill (Phases 0.5–4)
+
+**Branch.** `chore/dev-docs-scaffold` (continued).
+**Commits.** `534a18b` (dataset) · `c0f180f` (stop_slop env + COPILOT-9) ·
+`861fbf7` (COPILOT-2 optimizer + Azure→legacy) · `bcddff7` (pipeline
+fixes) · `1c67e7b` (Phase 4 results). Skill adoption committed in the
+`~/dotfiles` repo as `7015e96`.
+
+**What landed.**
+- **Phase 0.5 — dataset.** Built `data/stop_slop_split/` (252 items:
+  77 high + 145 medium positives + 30 negatives) by mining
+  `~/repos/HumanEmbedding` via 4 parallel extraction streams
+  (hand-labeled before/after, auto-diff + LLM-judge, worktree-mined
+  negatives, 57-pattern canonical catalog). Merge script
+  `scripts/merge_stop_slop_dataset.py`.
+- **COPILOT-3 + COPILOT-9 — stop_slop env.** New
+  `skillopt/envs/stop_slop/` package (grader / rollout / reflect /
+  dataloader / adapter / initial skill) + `configs/stop_slop/`. Skill
+  envs route outputs to `outputs/skills/<env>/<run>/`.
+- **COPILOT-2 + Phase 3 — Copilot-only.** Copilot CLI now runs as
+  BOTH optimizer and target. `chat_optimizer_via_copilot` +
+  message-list serializer in `codex_harness.py`. Defaults flipped:
+  `optimizer_backend` / `target_backend` / `model.backend` all
+  default to `copilot_cli_exec`; default model
+  `claude-opus-4.7-1m-internal`; `reasoning_effort` default `none`.
+  Azure / OpenAI / Anthropic / Qwen / MiniMax demoted to opt-in
+  legacy backends. `configure_azure_openai` is now opt-in. README
+  rewritten Copilot-first.
+- **Pipeline fixes (`bcddff7`).** Four bugs surfaced by 6 dry runs:
+  (1) `train.py` missing `--copilot_cli_exec_*` flags; (2) vestigial
+  import in the adapter; (3) ~13% of rollouts stuck in tool
+  exploration → inline-prompt path with `available_tools=""` +
+  `raw_prompt=True`; (4) analyst returned 0 edits because stop_slop
+  didn't write the `conversation.json` the reflect formatter reads.
+- **Phase 4 — first full training run.** 4 epochs × 38 steps,
+  151-item train pool, 50-item val gate, both sides
+  `claude-opus-4.7-1m-internal`, 5h57m, 2491 Copilot CLI calls.
+  Held-out test hard **0.2549 → 0.4706 (+21.57 pts)**, 24/51 vs
+  13/51. Best skill at step 13 of epoch 2; 4 accepts / 36 rejects;
+  plateau in epochs 3–4. 14 test items flipped fail→pass.
+- **Skill adoption.** Trained `best_skill.md` (235 lines) copied into
+  `~/.copilot/skills/stop-slop/SKILL.md` (dotfiles `7015e96`). The
+  pre-adoption original is preserved at
+  `skillopt/envs/stop_slop/skills/initial.md`.
+
+**Decisions.** `dev_docs/decisions.md`:
+- "Copilot-only direction; Azure OpenAI demoted to legacy"
+- "`copilot_cli_exec` ships CLI-only; no SDK path"
+- "`stop_slop` dataset source: `HumanEmbedding` repo"
+- "Copilot integration first-slice parameters"
+
+**Lessons.** None requiring a `lessons.md` entry; bugs were surfaced
+by the dry-run discipline working as intended.
+
+**Bugs.** Four pipeline bugs found + fixed (see `bcddff7` body).
+
+**Ideas added.** `COPILOT-10` (`--effort` harness retry for
+non-reasoning models), `CLEAN-3` (stale `docs/guide/new-backend.md`).
+
+**Open / deferred.**
+- Phase 3.5 — delete the now-legacy backend modules
+  (`azure_openai.py`, `claude_backend.py`, `qwen_backend.py`,
+  `minimax_backend.py`, `codex_backend.py`). Unblocked by the passing
+  full run; awaiting user go.
+- The 0.66 val plateau (epochs 3–4) — candidate for a second tuned
+  run (larger val, soft gate, autonomous LR, longer schedule).
+- `COPILOT-10`, `CLEAN-3`, token tracking for Copilot calls.
+- Next Tier-A skill: `ascii_align` (`COPILOT-4`).
+
+---
+
 ## 2026-05-31 — COPILOT-1: Copilot CLI target backend (Phase 1)
 
 **Branch.** `chore/dev-docs-scaffold`
