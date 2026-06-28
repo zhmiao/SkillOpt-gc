@@ -129,6 +129,49 @@ Avoid mixing benchmark runs with skill-optimization runs.
 **Status.** Land alongside COPILOT-3 (the first copilot-skill env).
 **Related.** Open question C.3.5 in the integration plan.
 
+### COPILOT-11 — Delete legacy backend modules (Phase 3.5 — refactor, not a clean delete)
+
+**Where.** `skillopt/model/{azure_openai,claude_backend,qwen_backend,minimax_backend,codex_backend}.py`,
+`skillopt/model/router.py`, `skillopt/model/__init__.py`,
+`skillopt/model/backend_config.py`.
+**What.** The user's `delete_after_smoke` choice (2026-06-01) to
+remove the now-legacy backend modules once Copilot-only was proven.
+The full run passed, so it's unblocked — BUT it is a refactor, not a
+`git rm`.
+**Why it's coupled** (discovered during 2026-06-22 wrap-up):
+- `azure_openai.py` holds the module-level globals
+  `OPTIMIZER_DEPLOYMENT` / `TARGET_DEPLOYMENT` that the **Copilot-only
+  path itself reads** — `skillopt/model/codex_harness.py:1338,1495`
+  (the COPILOT-2 optimizer functions) and
+  `skillopt/envs/stop_slop/adapter.py:110` both do
+  `from skillopt.model import azure_openai as _llm; getattr(_llm, "TARGET_DEPLOYMENT"/"OPTIMIZER_DEPLOYMENT")`.
+  Plus 5 benchmark env rollouts and the codex SDK path.
+- `claude_backend` / `qwen_backend` / `minimax_backend` are imported
+  by `model/__init__.py` as `_claude` / `_qwen` / `_minimax` for the
+  chat-dispatch fallbacks.
+- `codex_backend.py` is referenced only by `router.py` (itself a dead
+  legacy single-backend module) — the two can be deleted together.
+**Action (proper sequence).**
+1. Relocate `OPTIMIZER_DEPLOYMENT` / `TARGET_DEPLOYMENT` +
+   `set_optimizer_deployment` / `set_target_deployment` + the token
+   tracker into the backend-agnostic `backend_config.py` (or a new
+   `model/state.py`).
+2. Update all consumers to read deployment state from the new home.
+3. Strip the chat-dispatch branches for claude/qwen/minimax from
+   `model/__init__.py`.
+4. Delete `router.py` + `codex_backend.py` (safe pair).
+5. Delete `claude_backend.py` / `qwen_backend.py` /
+   `minimax_backend.py`; gut or delete `azure_openai.py`.
+6. Re-run `scripts/smoke_copilot_optimizer.py` +
+   `scripts/smoke_stop_slop_env.py` + a 1-epoch limit=5 training
+   cycle to confirm no regression.
+**Effort.** ~1-2 hours WITH its own test cycle. Needs a dedicated
+session — deferred from the 2026-06-22 wrap-up because doing a
+state-relocation refactor at session close risks the just-validated
+pipeline.
+**Status.** Deferred 2026-06-22. Blocks nothing (legacy modules sit
+dormant; not the default).
+
 ---
 
 ## Items from the 2026-05-31 sweep

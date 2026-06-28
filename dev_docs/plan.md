@@ -213,16 +213,18 @@ make this skillopt fully and solely for copilot."
   `_exec_prompt` wrapper was telling the model files would exist.
   Fixed at the same time as the previous bug.
 
-### Phase 3.5 — Delete legacy backend modules (pending user sign-off)
-_Pending Phase 3 sign-off + user-verified dry run._
+### Phase 3.5 — Delete legacy backend modules (DEFERRED 2026-06-22 → COPILOT-11)
+Per user choice `backend_modules_fate=delete_after_smoke`, the 5
+legacy backend modules were to be deleted once Copilot-only was
+proven. The full run passed (Phase 4), so it is unblocked.
 
-Per user choice `backend_modules_fate=delete_after_smoke`:
-`azure_openai.py`, `claude_backend.py`, `qwen_backend.py`,
-`minimax_backend.py`, `codex_backend.py` will be deleted in a
-separate commit once the user has run an end-to-end stop_slop
-training cycle (or at least a dry run) on Copilot-only mode and
-confirmed nothing broke. `codex_harness.py` stays — it contains the
-Copilot-only path.
+**Deferred at the 2026-06-22 wrap-up** because the deletion turned out
+to be a refactor, not a `git rm`: the Copilot-only path still reads
+`OPTIMIZER_DEPLOYMENT` / `TARGET_DEPLOYMENT` from `azure_openai.py`.
+Doing the state-relocation refactor at session close would risk the
+just-validated pipeline. Filed with full coupling notes as
+`COPILOT-11` in `dev_docs/ideas.md`. Needs a dedicated session +
+test cycle.
 
 ### Phase 4 — First training run (DONE 2026-06-01)
 End-to-end training of stop_slop on Copilot-only mode against
