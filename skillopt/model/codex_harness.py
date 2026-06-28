@@ -1,4 +1,5 @@
 """Helpers for running exec backends as the target harness."""
+
 from __future__ import annotations
 
 import asyncio
@@ -14,9 +15,14 @@ from typing import Any
 from skillopt.model.backend_config import (
     get_claude_code_exec_config,
     get_codex_exec_config,
+    get_copilot_cli_exec_config,
     get_target_backend,
 )
-
+from skillopt.model.common import (
+    CompatAssistantMessage,
+    CompatToolCall,
+    CompatToolFunction,
+)
 
 ANSWER_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -55,12 +61,14 @@ def render_skill_md(
     if preamble.strip():
         chunks.append(preamble.strip())
         chunks.append("")
-    chunks.extend([
-        "## Dynamic Guidance",
-        "",
-        body,
-        "",
-    ])
+    chunks.extend(
+        [
+            "## Dynamic Guidance",
+            "",
+            body,
+            "",
+        ]
+    )
     return "\n".join(chunks)
 
 
@@ -147,7 +155,7 @@ def _build_codex_trace_summary(raw: str, response: str) -> str:
     def _find(prefix: str) -> str:
         for ln in lines:
             if ln.startswith(prefix):
-                return ln[len(prefix):].strip()
+                return ln[len(prefix) :].strip()
         return ""
 
     sandbox = _find("sandbox: ")
@@ -173,7 +181,7 @@ def _build_codex_trace_summary(raw: str, response: str) -> str:
                 elif "failed" in outcome or "ERROR" in outcome:
                     skill_read = "failed"
         if ln.startswith("ERROR:"):
-            exec_errors.append(ln[len("ERROR:"):].strip())
+            exec_errors.append(ln[len("ERROR:") :].strip())
         if ln == "tokens used" and idx + 1 < len(lines):
             tokens_used = lines[idx + 1].strip()
 
@@ -268,6 +276,41 @@ def _persist_claude_artifacts(work_dir: str, raw: str, response: str) -> None:
         response=response,
         prefix="claude",
         summary_builder=_build_claude_trace_summary,
+    )
+
+
+def _build_copilot_trace_summary(raw: str, response: str) -> str:
+    """Per-rollout summary written next to the raw transcript.
+
+    Mirrors :func:`_build_claude_trace_summary`. Copilot CLI's
+    non-interactive output is free-form text by default; we surface
+    whether an ``<answer>...</answer>`` tag is present plus any
+    error-shaped lines from the transcript.
+    """
+    answer_format = "missing"
+    if "<answer>" in (response or "").lower():
+        answer_format = "tagged"
+    elif (response or "").strip():
+        answer_format = "plain_text"
+    errors: list[str] = []
+    for ln in (raw or "").splitlines():
+        if "error" in ln.lower() or "traceback" in ln.lower():
+            errors.append(ln.strip())
+        if len(errors) >= 3:
+            break
+    parts = ["Copilot CLI Trace Summary", f"- final answer format: {answer_format}"]
+    parts.append(f"- final response chars: {len(response or '')}")
+    parts.append(f"- errors: {' | '.join(errors) if errors else 'none'}")
+    return "\n".join(parts)
+
+
+def _persist_copilot_artifacts(work_dir: str, raw: str, response: str) -> None:
+    _persist_artifacts(
+        work_dir=work_dir,
+        raw=raw,
+        response=response,
+        prefix="copilot",
+        summary_builder=_build_copilot_trace_summary,
     )
 
 
@@ -557,13 +600,15 @@ def _extract_claude_structured_output(messages: list[Any]) -> Any:
 
 
 def _raw_exception(label: str, exc: BaseException) -> str:
-    return _json_dumps({
-        "backend": label,
-        "is_error": True,
-        "error_type": type(exc).__name__,
-        "error": str(exc),
-        "traceback": traceback.format_exc(),
-    })
+    return _json_dumps(
+        {
+            "backend": label,
+            "is_error": True,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+            "traceback": traceback.format_exc(),
+        }
+    )
 
 
 def _run_claude_code_sdk_exec(
@@ -627,23 +672,27 @@ def _run_claude_code_sdk_exec(
         first = messages[0] if messages else None
         first_data = getattr(first, "data", {}) if first is not None else {}
         terminal_is_error = bool(getattr(last, "is_error", False)) if last is not None else False
-        raw = _json_dumps({
-            "backend": "claude_code_sdk",
-            "uuid": first_data.get("uuid", "") if isinstance(first_data, dict) else "",
-            "session_id": getattr(last, "session_id", "") if last is not None else "",
-            "model": first_data.get("model", model) if isinstance(first_data, dict) else model,
-            "tools": first_data.get("tools", _tools_list(allowed_tools)) if isinstance(first_data, dict) else _tools_list(allowed_tools),
-            "duration_ms": getattr(last, "duration_ms", 0) if last is not None else 0,
-            "total_cost_usd": getattr(last, "total_cost_usd", 0.0) if last is not None else 0.0,
-            "num_turns": getattr(last, "num_turns", 0) if last is not None else 0,
-            "usage": getattr(last, "usage", {}) if last is not None else {},
-            "result": getattr(last, "result", "") if last is not None else "",
-            "is_error": bool(parse_error) or (terminal_is_error and not response.strip()),
-            "terminal_is_error": terminal_is_error,
-            "parse_error": parse_error,
-            "raw_structured_output": raw_structured_output,
-            "messages": messages,
-        })
+        raw = _json_dumps(
+            {
+                "backend": "claude_code_sdk",
+                "uuid": first_data.get("uuid", "") if isinstance(first_data, dict) else "",
+                "session_id": getattr(last, "session_id", "") if last is not None else "",
+                "model": first_data.get("model", model) if isinstance(first_data, dict) else model,
+                "tools": first_data.get("tools", _tools_list(allowed_tools))
+                if isinstance(first_data, dict)
+                else _tools_list(allowed_tools),
+                "duration_ms": getattr(last, "duration_ms", 0) if last is not None else 0,
+                "total_cost_usd": getattr(last, "total_cost_usd", 0.0) if last is not None else 0.0,
+                "num_turns": getattr(last, "num_turns", 0) if last is not None else 0,
+                "usage": getattr(last, "usage", {}) if last is not None else {},
+                "result": getattr(last, "result", "") if last is not None else "",
+                "is_error": bool(parse_error) or (terminal_is_error and not response.strip()),
+                "terminal_is_error": terminal_is_error,
+                "parse_error": parse_error,
+                "raw_structured_output": raw_structured_output,
+                "messages": messages,
+            }
+        )
         return response, raw
 
     return _run_async(asyncio.wait_for(_query(), timeout=timeout))
@@ -849,18 +898,20 @@ def _run_codex_sdk_exec(
                 parse_error = f"{type(exc).__name__}: {exc}"
         else:
             parse_error = "No response from Codex SDK (final_response is empty)."
-        raw = _json_dumps({
-            "backend": "codex_sdk",
-            "id": getattr(turn, "id", ""),
-            "thread_id": getattr(turn, "thread_id", ""),
-            "model": model,
-            "thread_options": thread_options,
-            "final_response": result_text,
-            "raw_structured_output": parsed,
-            "parse_error": parse_error,
-            "is_error": bool(parse_error),
-            "items": getattr(turn, "items", []),
-        })
+        raw = _json_dumps(
+            {
+                "backend": "codex_sdk",
+                "id": getattr(turn, "id", ""),
+                "thread_id": getattr(turn, "thread_id", ""),
+                "model": model,
+                "thread_options": thread_options,
+                "final_response": result_text,
+                "raw_structured_output": parsed,
+                "parse_error": parse_error,
+                "is_error": bool(parse_error),
+                "items": getattr(turn, "items", []),
+            }
+        )
         return response, raw
 
     return _run_async(asyncio.wait_for(_query(), timeout=timeout))
@@ -926,6 +977,7 @@ def _run_codex_cli_exec(
         raise
     try:
         from skillopt.model import azure_openai as _openai
+
         _openai.tracker.record("rollout", 0, 0)
     except Exception:
         pass
@@ -941,9 +993,7 @@ def _run_codex_cli_exec(
     if proc.returncode != 0:
         _persist_codex_artifacts(work_dir, raw, last_message)
         detail = (stderr or stdout).strip()
-        raise RuntimeError(
-            f"codex exec failed with exit code {proc.returncode}: {detail[:4000]}"
-        )
+        raise RuntimeError(f"codex exec failed with exit code {proc.returncode}: {detail[:4000]}")
     return last_message, raw
 
 
@@ -1054,4 +1104,428 @@ def run_target_exec(
             permission_mode=permission_mode,
             allow_file_edits=allow_file_edits,
         )
+    if backend == "copilot_cli_exec":
+        return run_copilot_cli_exec(
+            work_dir=work_dir,
+            prompt=prompt,
+            model=model,
+            timeout=timeout,
+            images=images,
+            data_dirs=data_dirs,
+            allow_file_edits=allow_file_edits,
+        )
     raise ValueError(f"Unsupported exec backend: {backend}")
+
+
+# ── GitHub Copilot CLI target backend ────────────────────────────────────────
+
+
+def _run_copilot_cli_exec(
+    *,
+    work_dir: str,
+    prompt: str,
+    model: str,
+    timeout: int,
+    images: list[str] | None = None,
+    data_dirs: list[str] | None = None,
+    allow_file_edits: bool = False,
+    available_tools: str | None = None,
+    raw_prompt: bool = False,
+) -> tuple[str, str]:
+    """One non-interactive ``copilot -p`` invocation. Returns (response, raw_log).
+
+    Mirrors :func:`_run_claude_code_cli_exec`. Copilot CLI does not have a
+    ``--cwd`` flag, so we ``cd`` via ``subprocess.run(cwd=work_dir)`` and
+    additionally pass ``--add-dir work_dir`` so the agent has explicit path
+    permission.
+
+    ``available_tools``: when not None, passed verbatim to copilot's
+    ``--available-tools=<value>``. Pass an empty string ("") to disable
+    every tool — used by optimizer-side calls where the model should
+    answer in pure-text mode without exploring the workspace.
+
+    ``raw_prompt``: when True, skip the target-side ``_exec_prompt``
+    wrapper (which tells the model to read ``task.md`` /
+    ``.agents/skills/skillopt-target/SKILL.md`` — files that only
+    exist when :func:`prepare_workspace` set them up). Optimizer-side
+    calls pass ``raw_prompt=True`` so the prompt reaches the model
+    verbatim.
+    """
+    config = get_copilot_cli_exec_config()
+    final_prompt = prompt if raw_prompt else _exec_prompt(prompt, allow_file_edits=allow_file_edits)
+    cmd: list[str] = [
+        str(config["path"]),
+        "-p",
+        final_prompt,
+        "--add-dir",
+        _validate_exec_path(work_dir),
+        "--no-color",
+    ]
+    if config.get("allow_all_tools", True):
+        cmd.append("--allow-all-tools")
+    if config.get("allow_all_paths", False):
+        cmd.append("--allow-all-paths")
+    if config.get("allow_all_urls", False):
+        cmd.append("--allow-all-urls")
+    if available_tools is not None:
+        cmd.append(f"--available-tools={available_tools}")
+    effort = _claude_effort(config.get("effort"))
+    if effort:
+        cmd.extend(["--effort", effort])
+    if model:
+        cmd.extend(["--model", model])
+    agent = str(config.get("agent") or "").strip()
+    if agent:
+        cmd.extend(["--agent", agent])
+    for data_dir in data_dirs or []:
+        cmd.extend(["--add-dir", _validate_exec_path(data_dir)])
+    if images:
+        for image in images:
+            img_path = _validate_exec_path(image)
+            cmd.extend(["--attachment", img_path])
+
+    try:
+        proc = subprocess.run(
+            cmd,
+            cwd=work_dir,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout or ""
+        stderr = exc.stderr or ""
+        raw = stdout
+        if stderr:
+            raw = f"{raw}\n[stderr]\n{stderr}" if raw else stderr
+        return "", raw
+
+    stdout = proc.stdout or ""
+    stderr = proc.stderr or ""
+    raw = stdout
+    if stderr:
+        raw = f"{raw}\n[stderr]\n{stderr}" if raw else stderr
+    response = stdout.strip()
+    if proc.returncode != 0 and not response:
+        return "", raw
+    return response, raw
+
+
+def run_copilot_cli_exec(
+    *,
+    work_dir: str,
+    prompt: str,
+    model: str,
+    timeout: int,
+    images: list[str] | None = None,
+    data_dirs: list[str] | None = None,
+    allow_file_edits: bool = False,
+    available_tools: str | None = None,
+    raw_prompt: bool = False,
+) -> tuple[str, str]:
+    """Run a Copilot CLI rollout with empty-response retries.
+
+    Public dispatcher entry point. The retry loop mirrors
+    :func:`run_claude_code_exec`: re-prompt up to
+    ``EXEC_EMPTY_RESPONSE_RETRIES`` times if the CLI returns an empty
+    assistant message. Persists raw + summary under
+    ``<work_dir>/../copilot_raw.txt`` and ``copilot_trace_summary.txt``.
+
+    ``available_tools`` and ``raw_prompt`` are forwarded to
+    :func:`_run_copilot_cli_exec`; pass ``available_tools=""`` and
+    ``raw_prompt=True`` for optimizer-side pure-reasoning calls (no
+    tool exploration, no target-side prompt wrapper).
+
+    Note: Copilot CLI does not ship an SDK as of v1.0.57. If an SDK
+    becomes available, mirror the ``use_sdk`` knob from
+    :func:`run_claude_code_exec`.
+    """
+    config = get_copilot_cli_exec_config()
+    retries = int(config.get("empty_response_retries", 0) or 0)
+    last_response = ""
+    all_raw: list[str] = []
+
+    for attempt in range(retries + 1):
+        attempt_prompt = _retry_prompt(prompt, attempt) if not raw_prompt else prompt
+        response, raw = _run_copilot_cli_exec(
+            work_dir=work_dir,
+            prompt=attempt_prompt,
+            model=model,
+            timeout=timeout,
+            images=images,
+            data_dirs=data_dirs,
+            allow_file_edits=allow_file_edits,
+            available_tools=available_tools,
+            raw_prompt=raw_prompt,
+        )
+        all_raw.append(f"===== COPILOT CLI ATTEMPT {attempt + 1} =====\n{raw}")
+        last_response = response
+        if response.strip():
+            combined = "\n\n".join(all_raw)
+            _persist_copilot_artifacts(work_dir, combined, response)
+            return response, combined
+
+    combined = "\n\n".join(all_raw)
+    _persist_copilot_artifacts(work_dir, combined, last_response)
+    return last_response, combined
+
+
+# ── Copilot CLI as the OPTIMIZER backend (COPILOT-2) ────────────────────────
+#
+# Same subprocess infrastructure as run_copilot_cli_exec, but exposes the
+# (system, user) -> response shape that skillopt.model.__init__.chat_optimizer
+# dispatches into. Token accounting is best-effort zeros — Copilot CLI does
+# print token counts to stderr ("Tokens ↑ 73.4k • ↓ 6") but the format is
+# unstable and not worth parsing for tracker accuracy.
+#
+# The chat_optimizer_messages_via_copilot variant is a passthrough/serializer:
+# no business-logic caller uses it today (verified by grep over skillopt/) but
+# it stays implementable for future tool-call callers. For now it concatenates
+# the message list into a single prompt and parses any well-formed
+# {"tool_calls": [...]} JSON the model emits.
+
+
+def _import_tempfile():
+    """Lazy import (kept local so module load stays cheap)."""
+    import tempfile
+
+    return tempfile
+
+
+def _import_tracker():
+    from skillopt.model.common import tracker
+
+    return tracker
+
+
+def _zero_usage() -> dict[str, int]:
+    return {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+
+
+def chat_optimizer_via_copilot(
+    *,
+    system: str,
+    user: str,
+    max_completion_tokens: int = 16384,  # noqa: ARG001 — accepted for API parity
+    retries: int = 5,  # noqa: ARG001 — retries handled inside run_copilot_cli_exec
+    stage: str = "optimizer",
+    timeout: int | None = None,
+) -> tuple[str, dict[str, int]]:
+    """Single ``chat_optimizer``-style call routed through Copilot CLI.
+
+    Concatenates ``system`` and ``user`` into one ``-p`` prompt and invokes
+    ``run_copilot_cli_exec`` against an ephemeral working directory.
+    Token usage is reported as zeros (see module docstring).
+    """
+    tempfile = _import_tempfile()
+    config = get_copilot_cli_exec_config()
+    tracker = _import_tracker()
+
+    prompt_parts: list[str] = []
+    if system and system.strip():
+        prompt_parts.append("# System\n" + system.strip())
+    prompt_parts.append("# User\n" + (user or "").strip())
+    prompt_parts.append(
+        "# Output\nReturn only your response as plain text. Do not echo the "
+        "system or user blocks. Do not wrap in markdown fences unless explicitly "
+        "asked."
+    )
+    prompt = "\n\n".join(prompt_parts)
+
+    # Pull the active optimizer deployment from the openai backend's
+    # runtime state (configured by trainer / eval_only via
+    # set_optimizer_deployment). Falls back to the configured default.
+    from skillopt.model import azure_openai as _llm
+
+    model = getattr(_llm, "OPTIMIZER_DEPLOYMENT", "") or ""
+
+    with tempfile.TemporaryDirectory(prefix="skillopt_copilot_opt_") as work_dir:
+        response, _raw = run_copilot_cli_exec(
+            work_dir=work_dir,
+            prompt=prompt,
+            model=model,
+            timeout=int(timeout or 300),
+            available_tools="",  # optimizer-side: pure-text reasoning, no tool exploration
+            raw_prompt=True,  # bypass target-side prompt wrapper
+        )
+
+    usage = _zero_usage()
+    tracker.record(stage, usage["prompt_tokens"], usage["completion_tokens"])
+    return response, usage
+
+
+def _serialize_messages_for_copilot(
+    messages: list[dict[str, Any]],
+    tools: list[dict[str, Any]] | None,
+    tool_choice: str | dict[str, Any] | None,
+) -> str:
+    """Flatten a message list (plus optional tools) into a single prompt.
+
+    The shape mirrors what claude_backend / azure_openai do natively:
+    each message becomes a labeled block. Tool definitions, if any,
+    are appended with explicit instructions to return JSON of the form
+    ``{"tool_calls":[{"name":"...","arguments":{...}}]}``.
+    """
+    blocks: list[str] = []
+    for msg in messages or []:
+        role = str(msg.get("role", "user"))
+        content = msg.get("content", "")
+        # OpenAI / Anthropic-style content arrays: collapse to text only.
+        if isinstance(content, list):
+            text_parts = []
+            for chunk in content:
+                if isinstance(chunk, dict) and chunk.get("type") == "text":
+                    text_parts.append(str(chunk.get("text", "")))
+                elif isinstance(chunk, str):
+                    text_parts.append(chunk)
+            content = "\n".join(text_parts)
+        content = str(content or "")
+
+        if role == "system":
+            blocks.append("# System\n" + content)
+        elif role == "user":
+            blocks.append("# User\n" + content)
+        elif role == "assistant":
+            assistant_text = content
+            tool_calls = msg.get("tool_calls") or []
+            if tool_calls:
+                assistant_text += "\n\nTool calls: " + json.dumps(tool_calls, ensure_ascii=False)
+            blocks.append("# Assistant\n" + assistant_text)
+        elif role == "tool":
+            tcid = msg.get("tool_call_id", "?")
+            blocks.append(f"# Tool result (call {tcid})\n{content}")
+        else:
+            blocks.append(f"# {role}\n{content}")
+
+    if tools:
+        tools_block = "# Available tools\n"
+        tools_block += json.dumps(tools, ensure_ascii=False, indent=2)
+        tools_block += (
+            "\n\nTo call a tool, return ONLY a JSON object of the form:\n"
+            '{"tool_calls":[{"name":"<tool_name>","arguments":{...}}]}\n'
+            "Otherwise return plain text as your assistant message."
+        )
+        if tool_choice and tool_choice != "auto":
+            if isinstance(tool_choice, dict):
+                forced = tool_choice.get("function", {}).get("name") or tool_choice.get("name") or ""
+            else:
+                forced = str(tool_choice)
+            if forced and forced != "auto":
+                tools_block += f"\n\nYou MUST call the tool named: {forced}"
+        blocks.append(tools_block)
+
+    return "\n\n".join(blocks)
+
+
+def _parse_tool_calls_from_response(response: str) -> list[dict[str, Any]] | None:
+    """Try to recover a tool_calls list from the model's free-form response.
+
+    Returns ``None`` if no tool-call JSON is detected. Recognises the shape
+    enforced by ``_serialize_messages_for_copilot``.
+    """
+    text = (response or "").strip()
+    if not text:
+        return None
+
+    # Strip optional ``` fences.
+    if text.startswith("```"):
+        text = re.sub(r"^```[a-zA-Z]*\n", "", text)
+        text = text.rstrip("`").rstrip()
+    if not text.startswith("{"):
+        return None
+
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(parsed, dict):
+        return None
+    tool_calls = parsed.get("tool_calls")
+    if not isinstance(tool_calls, list) or not tool_calls:
+        return None
+
+    structured: list[dict[str, Any]] = []
+    for idx, call in enumerate(tool_calls):
+        if not isinstance(call, dict):
+            continue
+        name = str(call.get("name") or "")
+        arguments = call.get("arguments", {})
+        if not isinstance(arguments, str):
+            arguments = json.dumps(arguments, ensure_ascii=False)
+        structured.append(
+            {
+                "id": str(call.get("id") or f"call_{idx}"),
+                "type": "function",
+                "function": {"name": name, "arguments": arguments},
+            }
+        )
+    return structured or None
+
+
+def chat_optimizer_messages_via_copilot(
+    *,
+    messages: list[dict[str, Any]],
+    max_completion_tokens: int = 16384,  # noqa: ARG001 — API parity
+    retries: int = 5,  # noqa: ARG001 — handled inside run_copilot_cli_exec
+    stage: str = "optimizer",
+    tools: list[dict[str, Any]] | None = None,
+    tool_choice: str | dict[str, Any] | None = None,
+    return_message: bool = False,
+    timeout: int | None = None,
+) -> tuple[Any, dict[str, int]]:
+    """Multi-turn ``chat_optimizer_messages`` routed through Copilot CLI.
+
+    Serializes the message list into a single ``-p`` prompt. When ``tools``
+    is provided the model is instructed to emit JSON of the form
+    ``{"tool_calls":[...]}`` which we parse back into the
+    OpenAI-compatible message object via :class:`CompatAssistantMessage`.
+
+    No business-logic code in skillopt/ currently calls this (verified by
+    grep 2026-06-01). It exists for future callers and for API parity.
+    """
+    tempfile = _import_tempfile()
+    config = get_copilot_cli_exec_config()
+    tracker = _import_tracker()
+
+    prompt = _serialize_messages_for_copilot(messages, tools, tool_choice)
+    if tools and return_message:
+        # Make sure even no-tool-call answers come back as plain prose
+        prompt += "\n\nIf no tool is needed, return your reply as plain text."
+
+    from skillopt.model import azure_openai as _llm
+
+    model = getattr(_llm, "OPTIMIZER_DEPLOYMENT", "") or ""
+
+    with tempfile.TemporaryDirectory(prefix="skillopt_copilot_optmsg_") as work_dir:
+        response, _raw = run_copilot_cli_exec(
+            work_dir=work_dir,
+            prompt=prompt,
+            model=model,
+            timeout=int(timeout or 300),
+            available_tools="",  # optimizer-side: pure-text reasoning, no tool exploration
+            raw_prompt=True,  # bypass target-side prompt wrapper
+        )
+
+    usage = _zero_usage()
+    tracker.record(stage, usage["prompt_tokens"], usage["completion_tokens"])
+
+    if return_message:
+        tool_calls_raw = _parse_tool_calls_from_response(response) if tools else None
+        tool_calls: list[CompatToolCall] = []
+        for raw_call in tool_calls_raw or []:
+            tool_calls.append(
+                CompatToolCall(
+                    id=str(raw_call.get("id") or ""),
+                    function=CompatToolFunction(
+                        name=str(raw_call.get("function", {}).get("name") or ""),
+                        arguments=str(raw_call.get("function", {}).get("arguments") or "{}"),
+                    ),
+                )
+            )
+        msg = CompatAssistantMessage(
+            content=("" if tool_calls else response),
+            tool_calls=tool_calls,
+        )
+        return msg, usage
+
+    return response, usage

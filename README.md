@@ -62,25 +62,80 @@ alfworld-download
 
 ### Configure API Credentials
 
+**This fork of SkillOpt runs on GitHub Copilot CLI by default for both
+the optimizer and the target.** No Azure / OpenAI / Anthropic API keys
+are required for the default setup. Copilot CLI handles its own
+authentication.
+
 ```bash
-cp .env.example .env
-# Edit .env with your API credentials, then:
-source .env
+# Install Copilot CLI: https://docs.github.com/copilot/how-tos/copilot-cli
+# Authenticate it once interactively:
+copilot
+# (follow the prompts; then exit)
 ```
 
-#### Azure OpenAI *(recommended)*
+That's it for the default path. Continue to **Quick Start** below.
+
+#### Optional environment overrides (Copilot CLI)
+
+The defaults in `configs/_base_/default.yaml` are sensible. Override
+only if you want a non-default model or stricter sandboxing:
+
+```bash
+export COPILOT_CLI_EXEC_PATH="copilot"             # or absolute path
+export COPILOT_CLI_EXEC_EFFORT="none"              # none|low|medium|high|xhigh|max
+                                                    # (most non-reasoning Claude
+                                                    #  models reject anything but
+                                                    #  "none")
+export COPILOT_CLI_EXEC_ALLOW_ALL_TOOLS="true"     # required for unattended rollouts
+export COPILOT_CLI_EXEC_ALLOW_ALL_PATHS="false"
+export COPILOT_CLI_EXEC_ALLOW_ALL_URLS="false"
+```
+
+Pick a non-default model via the CLI:
+
+```bash
+python scripts/train.py --config configs/stop_slop/default.yaml \
+    --target_backend copilot_cli_exec \
+    --target_model claude-sonnet-4.5 \
+    --optimizer_backend copilot_cli_exec \
+    --optimizer_model claude-opus-4.7
+```
+
+Run `copilot --help` to see which `--model` values your account supports.
+
+> Copilot CLI does not ship a Python SDK as of v1.0.57; SkillOpt invokes
+> it via subprocess (`-p` mode with `--allow-all-tools`). Each optimizer
+> call uses `--available-tools=` (empty) to disable tool exploration for
+> pure-reasoning prompts; target rollouts retain full tool access.
+
+---
+
+### Legacy backends (Azure OpenAI / Anthropic / Qwen / MiniMax / codex_exec / claude_code_exec)
+
+These still work for users who want to reproduce the paper or use a
+non-Copilot model. They are NOT the default in this fork; see
+`dev_docs/decisions.md § Copilot-only direction` for the rationale.
+
+Pick a legacy backend by passing `--backend <name>` (or
+`--target_backend` / `--optimizer_backend` for split-mode runs). Each
+backend has its own env-var block in `.env.example`.
+
+<details>
+<summary>Azure OpenAI</summary>
 
 ```bash
 export AZURE_OPENAI_ENDPOINT="https://your-resource.openai.azure.com/"
-# Option 1: API key auth
 export AZURE_OPENAI_API_KEY="your-key"
-# Option 2: Azure CLI auth (no API key needed)
-export AZURE_OPENAI_AUTH_MODE="azure_cli"
+# Or use Azure CLI auth:
+# export AZURE_OPENAI_AUTH_MODE="azure_cli"
+python scripts/train.py --config configs/searchqa/default.yaml --backend azure_openai
 ```
 
-> **Note:** `AZURE_OPENAI_ENDPOINT` is required for all three modes (`api_key`, `azure_cli`, `openai_compatible`). Without it, all LLM calls will fail.
+</details>
 
-#### OpenAI-compatible endpoints
+<details>
+<summary>OpenAI-compatible endpoints</summary>
 
 ```bash
 export AZURE_OPENAI_ENDPOINT="https://api.openai.com/v1"
@@ -88,30 +143,42 @@ export AZURE_OPENAI_API_KEY="sk-..."
 export AZURE_OPENAI_AUTH_MODE="openai_compatible"
 ```
 
-This routes all calls through the plain OpenAI Python client (no Azure auth, no `api-version` header).
+SkillOpt reuses the `AZURE_OPENAI_*` env var names; there is no
+separate `OPENAI_API_KEY` knob.
 
-> **Note:** SkillOpt reuses the `AZURE_OPENAI_*` env var names even in this mode — there is no separate `OPENAI_API_KEY` knob.
+</details>
 
-#### Anthropic Claude
+<details>
+<summary>Anthropic Claude (direct API)</summary>
 
 ```bash
 export ANTHROPIC_API_KEY="sk-ant-..."
+python scripts/train.py --config configs/searchqa/default.yaml --backend claude_chat
 ```
 
-#### Qwen *(local vLLM)*
+</details>
+
+<details>
+<summary>Qwen (local vLLM)</summary>
 
 ```bash
 export QWEN_CHAT_BASE_URL="http://localhost:8000/v1"
 export QWEN_CHAT_MODEL="Qwen/Qwen3.5-4B"
+python scripts/train.py --config configs/searchqa/default.yaml --target_backend qwen_chat
 ```
 
-#### MiniMax
+</details>
+
+<details>
+<summary>MiniMax</summary>
 
 ```bash
 export MINIMAX_BASE_URL="https://api.minimax.io/v1"
 export MINIMAX_API_KEY="..."
 export MINIMAX_MODEL="MiniMax-M2.7"
 ```
+
+</details>
 
 ---
 

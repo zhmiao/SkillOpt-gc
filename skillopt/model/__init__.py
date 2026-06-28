@@ -11,15 +11,17 @@ from skillopt.model import qwen_backend as _qwen
 from skillopt.model.backend_config import (  # noqa: F401
     configure_claude_code_exec,
     configure_codex_exec,
+    configure_copilot_cli_exec,
     get_claude_code_exec_config,
     get_codex_exec_config,
-    get_target_backend,
+    get_copilot_cli_exec_config,
     get_optimizer_backend,
+    get_target_backend,
+    is_optimizer_chat_backend,
     is_target_chat_backend,
     is_target_exec_backend,
-    is_optimizer_chat_backend,
-    set_target_backend,
     set_optimizer_backend,
+    set_target_backend,
 )
 
 
@@ -84,6 +86,17 @@ def chat_optimizer(
     reasoning_effort: str | None = None,
     timeout: int | None = None,
 ) -> tuple[str, dict]:
+    if get_optimizer_backend() == "copilot_cli_exec":
+        from skillopt.model.codex_harness import chat_optimizer_via_copilot
+
+        return chat_optimizer_via_copilot(
+            system=system,
+            user=user,
+            max_completion_tokens=max_completion_tokens,
+            retries=retries,
+            stage=stage,
+            timeout=timeout,
+        )
     if get_optimizer_backend() == "claude_chat":
         return _claude.chat_optimizer(
             system=system,
@@ -168,6 +181,19 @@ def chat_optimizer_messages(
     return_message: bool = False,
     timeout: int | None = None,
 ) -> tuple[Any, dict]:
+    if get_optimizer_backend() == "copilot_cli_exec":
+        from skillopt.model.codex_harness import chat_optimizer_messages_via_copilot
+
+        return chat_optimizer_messages_via_copilot(
+            messages=messages,
+            max_completion_tokens=max_completion_tokens,
+            retries=retries,
+            stage=stage,
+            tools=tools,
+            tool_choice=tool_choice,
+            return_message=return_message,
+            timeout=timeout,
+        )
     if get_optimizer_backend() == "claude_chat":
         return _claude.chat_optimizer_messages(
             messages=messages,

@@ -11,6 +11,7 @@ Orchestrates the 6-stage ReflACT pipeline:
 The trainer is environment-agnostic; all environment-specific logic is
 delegated to an :class:`~skillopt.envs.base.EnvAdapter` instance.
 """
+
 from __future__ import annotations
 
 import glob
@@ -26,9 +27,23 @@ from skillopt.datasets.base import BatchSpec
 from skillopt.envs.base import EnvAdapter
 from skillopt.evaluation.gate import evaluate_gate, select_gate_score
 from skillopt.gradient.aggregate import merge_patches
-from skillopt.optimizer.meta_skill import run_meta_skill
+from skillopt.model import (
+    configure_azure_openai,
+    configure_claude_code_exec,
+    configure_codex_exec,
+    configure_copilot_cli_exec,
+    configure_minimax_chat,
+    configure_qwen_chat,
+    get_token_summary,
+    set_optimizer_backend,
+    set_optimizer_deployment,
+    set_reasoning_effort,
+    set_target_backend,
+    set_target_deployment,
+)
 from skillopt.optimizer.clip import rank_and_select
 from skillopt.optimizer.lr_autonomous import decide_autonomous_learning_rate
+from skillopt.optimizer.meta_skill import run_meta_skill
 from skillopt.optimizer.rewrite import rewrite_skill_from_suggestions
 from skillopt.optimizer.scheduler import build_scheduler
 from skillopt.optimizer.skill import apply_patch_with_report
@@ -47,24 +62,10 @@ from skillopt.optimizer.update_modes import (
     payload_label,
     short_item_summary,
 )
-from skillopt.model import (
-    configure_azure_openai,
-    configure_claude_code_exec,
-    configure_codex_exec,
-    configure_minimax_chat,
-    configure_qwen_chat,
-    get_token_summary,
-    reset_token_tracker,
-    set_reasoning_effort,
-    set_target_backend,
-    set_target_deployment,
-    set_optimizer_backend,
-    set_optimizer_deployment,
-)
 from skillopt.utils import compute_score, skill_hash
 
-
 # ── Patch normalization ───────────────────────────────────────────────────────
+
 
 def _normalise_patches(
     raw_patches: list[dict | None],
@@ -116,10 +117,7 @@ def _normalise_longitudinal_pair_policy(policy: str | None) -> str:
         "00_11": "unchanged",
     }
     if raw not in aliases:
-        raise ValueError(
-            "optimizer.longitudinal_pair_policy must be one of "
-            "mixed, changed, unchanged"
-        )
+        raise ValueError("optimizer.longitudinal_pair_policy must be one of mixed, changed, unchanged")
     return aliases[raw]
 
 
@@ -266,6 +264,7 @@ def _redact_cfg(cfg: dict) -> dict:
             redacted[key] = _redact_value(str(redacted[key]))
     return redacted
 
+
 def _load_history(out_root: str) -> list[dict]:
     path = os.path.join(out_root, "history.json")
     if os.path.exists(path):
@@ -297,7 +296,10 @@ def _load_meta_skill_content(out_root: str, epoch: int) -> str:
     if epoch <= 0:
         return ""
     path = os.path.join(
-        out_root, "meta_skill", f"epoch_{epoch:02d}", "meta_skill_result.json",
+        out_root,
+        "meta_skill",
+        f"epoch_{epoch:02d}",
+        "meta_skill_result.json",
     )
     if not os.path.exists(path):
         return ""
@@ -358,8 +360,7 @@ def _resolve_train_size(cfg: dict, dataloader) -> int:
     train_size = configured if configured > 0 else inferred
     if train_size is None or train_size <= 0:
         raise ValueError(
-            "Unable to determine train_size automatically. "
-            "Provide train.train_size in the config for this environment."
+            "Unable to determine train_size automatically. Provide train.train_size in the config for this environment."
         )
     return int(train_size)
 
@@ -431,11 +432,13 @@ def _extract_failure_patterns(
     desc_iter = iter(analyst_descs)
     for prefix, items in groups.items():
         desc = next(desc_iter, None) or prefix
-        patterns.append({
-            "pattern": desc,
-            "count": len(items),
-            "task_ids": [str(r.get("id", "?")) for r in items],
-        })
+        patterns.append(
+            {
+                "pattern": desc,
+                "count": len(items),
+                "task_ids": [str(r.get("id", "?")) for r in items],
+            }
+        )
     return patterns
 
 
@@ -475,9 +478,7 @@ def _format_step_buffer(buffer: list[dict]) -> str:
         if rejected:
             score_before = entry.get("score_before", "?")
             score_after = entry.get("score_after", "?")
-            parts.append(
-                f"  Rejected edits (score {score_before} → {score_after}):"
-            )
+            parts.append(f"  Rejected edits (score {score_before} → {score_after}):")
             for i, e in enumerate(rejected, 1):
                 if e.get("op") is not None:
                     op = e.get("op", "?")
@@ -497,6 +498,7 @@ def _format_step_buffer(buffer: list[dict]) -> str:
 
 
 # ── Trainer ──────────────────────────────────────────────────────────────────
+
 
 class ReflACTTrainer:
     """Main ReflACT training loop.
@@ -550,43 +552,47 @@ class ReflACTTrainer:
             return env_manager, batch.batch_size
 
         # ── Configure models ─────────────────────────────────────────────
-        backend = cfg.get("model_backend", "azure_openai")
-        configure_azure_openai(
-            endpoint=(
-                cfg.get("azure_openai_endpoint")
-                or cfg.get("azure_endpoint")
-                or None
-            ),
-            api_version=(
-                cfg.get("azure_openai_api_version")
-                or cfg.get("azure_api_version")
-                or None
-            ),
-            api_key=(
-                cfg.get("azure_openai_api_key")
-                or cfg.get("azure_api_key")
-                or None
-            ),
-            auth_mode=cfg.get("azure_openai_auth_mode") or None,
-            ad_scope=cfg.get("azure_openai_ad_scope") or None,
-            managed_identity_client_id=cfg.get("azure_openai_managed_identity_client_id") or None,
-            optimizer_endpoint=cfg.get("optimizer_azure_openai_endpoint") or None,
-            optimizer_api_version=cfg.get("optimizer_azure_openai_api_version") or None,
-            optimizer_api_key=cfg.get("optimizer_azure_openai_api_key") or None,
-            optimizer_auth_mode=cfg.get("optimizer_azure_openai_auth_mode") or None,
-            optimizer_ad_scope=cfg.get("optimizer_azure_openai_ad_scope") or None,
-            optimizer_managed_identity_client_id=(
-                cfg.get("optimizer_azure_openai_managed_identity_client_id") or None
-            ),
-            target_endpoint=cfg.get("target_azure_openai_endpoint") or None,
-            target_api_version=cfg.get("target_azure_openai_api_version") or None,
-            target_api_key=cfg.get("target_azure_openai_api_key") or None,
-            target_auth_mode=cfg.get("target_azure_openai_auth_mode") or None,
-            target_ad_scope=cfg.get("target_azure_openai_ad_scope") or None,
-            target_managed_identity_client_id=(
-                cfg.get("target_azure_openai_managed_identity_client_id") or None
-            ),
+        # Default backend is now copilot_cli_exec (the Copilot-only direction
+        # documented in dev_docs/decisions.md). The wiring below remains
+        # backward-compatible for users who explicitly pick legacy backends
+        # (azure_openai, claude_chat, qwen_chat, minimax_chat, codex_exec).
+        backend = cfg.get("model_backend", "copilot_cli_exec")
+
+        # Azure OpenAI is only needed when the active optimizer or target
+        # actually routes through it. Skip the Azure configure call
+        # entirely when both sides are non-Azure backends.
+        provisional_opt = cfg.get("optimizer_backend") or ""
+        provisional_tgt = cfg.get("target_backend") or ""
+        azure_consumers = {"openai_chat", "azure_openai", "codex_exec"}
+        needs_azure_now = (
+            backend in azure_consumers
+            or provisional_opt in azure_consumers
+            or provisional_tgt in azure_consumers
+            or bool(cfg.get("azure_openai_endpoint") or cfg.get("azure_endpoint"))
         )
+        if needs_azure_now:
+            configure_azure_openai(
+                endpoint=(cfg.get("azure_openai_endpoint") or cfg.get("azure_endpoint") or None),
+                api_version=(cfg.get("azure_openai_api_version") or cfg.get("azure_api_version") or None),
+                api_key=(cfg.get("azure_openai_api_key") or cfg.get("azure_api_key") or None),
+                auth_mode=cfg.get("azure_openai_auth_mode") or None,
+                ad_scope=cfg.get("azure_openai_ad_scope") or None,
+                managed_identity_client_id=cfg.get("azure_openai_managed_identity_client_id") or None,
+                optimizer_endpoint=cfg.get("optimizer_azure_openai_endpoint") or None,
+                optimizer_api_version=cfg.get("optimizer_azure_openai_api_version") or None,
+                optimizer_api_key=cfg.get("optimizer_azure_openai_api_key") or None,
+                optimizer_auth_mode=cfg.get("optimizer_azure_openai_auth_mode") or None,
+                optimizer_ad_scope=cfg.get("optimizer_azure_openai_ad_scope") or None,
+                optimizer_managed_identity_client_id=(
+                    cfg.get("optimizer_azure_openai_managed_identity_client_id") or None
+                ),
+                target_endpoint=cfg.get("target_azure_openai_endpoint") or None,
+                target_api_version=cfg.get("target_azure_openai_api_version") or None,
+                target_api_key=cfg.get("target_azure_openai_api_key") or None,
+                target_auth_mode=cfg.get("target_azure_openai_auth_mode") or None,
+                target_ad_scope=cfg.get("target_azure_openai_ad_scope") or None,
+                target_managed_identity_client_id=(cfg.get("target_azure_openai_managed_identity_client_id") or None),
+            )
         optimizer_backend = cfg.get("optimizer_backend")
         target_backend = cfg.get("target_backend")
         if not optimizer_backend or not target_backend:
@@ -599,12 +605,19 @@ class ReflACTTrainer:
             elif backend == "claude_code_exec":
                 optimizer_backend = optimizer_backend or "openai_chat"
                 target_backend = target_backend or "claude_code_exec"
+            elif backend in {"copilot", "copilot_cli", "copilot_cli_exec", "github_copilot"}:
+                optimizer_backend = optimizer_backend or "copilot_cli_exec"
+                target_backend = target_backend or "copilot_cli_exec"
             elif backend in {"qwen", "qwen_chat"}:
                 optimizer_backend = optimizer_backend or "openai_chat"
                 target_backend = target_backend or "qwen_chat"
-            else:
+            elif backend in {"openai_chat", "azure_openai", "azure", "azure-openai"}:
                 optimizer_backend = optimizer_backend or "openai_chat"
                 target_backend = target_backend or "openai_chat"
+            else:
+                # Copilot-only default for unknown / unset backends.
+                optimizer_backend = optimizer_backend or "copilot_cli_exec"
+                target_backend = target_backend or "copilot_cli_exec"
             cfg["optimizer_backend"] = optimizer_backend
             cfg["target_backend"] = target_backend
         set_optimizer_backend(optimizer_backend)
@@ -629,6 +642,14 @@ class ReflACTTrainer:
             effort=cfg.get("claude_code_exec_effort", cfg.get("reasoning_effort", "medium")),
             max_thinking_tokens=cfg.get("claude_code_exec_max_thinking_tokens", 16384),
         )
+        configure_copilot_cli_exec(
+            path=cfg.get("copilot_cli_exec_path", "copilot"),
+            effort=cfg.get("copilot_cli_exec_effort", cfg.get("reasoning_effort", "medium")),
+            allow_all_tools=cfg.get("copilot_cli_exec_allow_all_tools", True),
+            allow_all_paths=cfg.get("copilot_cli_exec_allow_all_paths", False),
+            allow_all_urls=cfg.get("copilot_cli_exec_allow_all_urls", False),
+            agent=cfg.get("copilot_cli_exec_agent", ""),
+        )
         configure_qwen_chat(
             base_url=cfg.get("qwen_chat_base_url") or None,
             api_key=cfg.get("qwen_chat_api_key") or None,
@@ -648,9 +669,7 @@ class ReflACTTrainer:
         if minimax_model_cfg and cfg.get("target_backend") == "minimax_chat":
             set_target_deployment(str(minimax_model_cfg))
         os.environ["REFLACT_CODEX_TRACE_TO_OPTIMIZER"] = (
-            "1"
-            if target_backend == "codex_exec" and cfg.get("codex_trace_to_optimizer", False)
-            else "0"
+            "1" if target_backend == "codex_exec" and cfg.get("codex_trace_to_optimizer", False) else "0"
         )
         reasoning = cfg.get("reasoning_effort", "") or None
         set_reasoning_effort(reasoning)
@@ -666,9 +685,7 @@ class ReflACTTrainer:
             try:
                 import ray
             except ImportError as e:
-                raise ImportError(
-                    "This environment requires ray, but ray is not installed."
-                ) from e
+                raise ImportError("This environment requires ray, but ray is not installed.") from e
 
             if not ray.is_initialized():
                 ray.init(num_gpus=0)
@@ -694,9 +711,7 @@ class ReflACTTrainer:
         lr_control_mode = _normalise_lr_control_mode(cfg.get("lr_control_mode", "fixed"))
         if is_full_rewrite_minibatch_mode(update_mode):
             lr_control_mode = "none"
-        longitudinal_pair_policy = _normalise_longitudinal_pair_policy(
-            cfg.get("longitudinal_pair_policy", "mixed")
-        )
+        longitudinal_pair_policy = _normalise_longitudinal_pair_policy(cfg.get("longitudinal_pair_policy", "mixed"))
         rewrite_reasoning_effort = cfg.get("rewrite_reasoning_effort", "high")
         if rewrite_reasoning_effort == "":
             rewrite_reasoning_effort = None
@@ -743,20 +758,24 @@ class ReflACTTrainer:
         else:
             base_seeds = [seed + i + 1 for i in range(batches_per_epoch)]
 
-        print(f"\n  [config] epochs={num_epochs} steps/epoch={steps_per_epoch} "
-              f"(auto) accum={accumulation} batch_size={batch_size}")
+        print(
+            f"\n  [config] epochs={num_epochs} steps/epoch={steps_per_epoch} "
+            f"(auto) accum={accumulation} batch_size={batch_size}"
+        )
         print(f"  [config] train_size={train_size}")
-        print(f"  [config] batches/epoch={batches_per_epoch} "
-              f"total_steps={total_steps} "
-              f"games/epoch={train_pool_size}")
-        print(f"  [config] lr_scheduler={cfg.get('lr_scheduler', 'constant')} "
-              f"edit_budget={cfg['edit_budget']} "
-              f"min_edit_budget={cfg.get('min_edit_budget', 2)}")
-        print(f"  [config] skill_update_mode={update_mode} "
-              f"lr_control_mode={lr_control_mode} "
-              f"rewrite_reasoning_effort={rewrite_reasoning_effort or 'off'} "
-              f"rewrite_max_completion_tokens={rewrite_max_completion_tokens} "
-              f"max_analyst_rounds={max_analyst_rounds}")
+        print(f"  [config] batches/epoch={batches_per_epoch} total_steps={total_steps} games/epoch={train_pool_size}")
+        print(
+            f"  [config] lr_scheduler={cfg.get('lr_scheduler', 'constant')} "
+            f"edit_budget={cfg['edit_budget']} "
+            f"min_edit_budget={cfg.get('min_edit_budget', 2)}"
+        )
+        print(
+            f"  [config] skill_update_mode={update_mode} "
+            f"lr_control_mode={lr_control_mode} "
+            f"rewrite_reasoning_effort={rewrite_reasoning_effort or 'off'} "
+            f"rewrite_max_completion_tokens={rewrite_max_completion_tokens} "
+            f"max_analyst_rounds={max_analyst_rounds}"
+        )
         print(f"  [config] longitudinal_pair_policy={longitudinal_pair_policy}")
         print(f"  [config] base_seeds={base_seeds}")
 
@@ -766,12 +785,15 @@ class ReflACTTrainer:
         if runtime_state:
             last_step = int(runtime_state.get("last_completed_step", 0) or 0)
             current_skill_path = runtime_state.get("current_skill_path") or os.path.join(
-                out_root, "skills", f"skill_v{last_step:04d}.md",
+                out_root,
+                "skills",
+                f"skill_v{last_step:04d}.md",
             )
             with open(current_skill_path) as f:
                 current_skill = f.read()
             best_skill_path = runtime_state.get("best_skill_path") or os.path.join(
-                out_root, "best_skill.md",
+                out_root,
+                "best_skill.md",
             )
             if os.path.exists(best_skill_path):
                 with open(best_skill_path) as f:
@@ -782,8 +804,7 @@ class ReflACTTrainer:
             best_score = float(runtime_state.get("best_score", current_score) or current_score)
             best_step = runtime_state.get("best_step", last_step)
             current_origin = str(
-                runtime_state.get("current_origin")
-                or (f"step_{last_step:04d}" if last_step > 0 else "initial_skill")
+                runtime_state.get("current_origin") or (f"step_{last_step:04d}" if last_step > 0 else "initial_skill")
             )
             best_origin = str(runtime_state.get("best_origin") or current_origin)
             resume_from = last_step + 1
@@ -810,10 +831,7 @@ class ReflACTTrainer:
             best_origin = f"step_{int(best_step):04d}" if isinstance(best_step, int) else str(best_step)
             resume_from = last_step + 1
             scheduler.load_state_dict({"current_step": last_step})
-            print(
-                f"  [resume] from step {resume_from}  "
-                f"current={current_score:.4f} best={best_score:.4f}"
-            )
+            print(f"  [resume] from step {resume_from}  current={current_score:.4f} best={best_score:.4f}")
         else:
             current_skill = skill_init
             best_skill = skill_init
@@ -832,7 +850,9 @@ class ReflACTTrainer:
                 {
                     "last_completed_step": last_completed_step,
                     "current_skill_path": os.path.join(
-                        out_root, "skills", f"skill_v{last_completed_step:04d}.md",
+                        out_root,
+                        "skills",
+                        f"skill_v{last_completed_step:04d}.md",
                     ),
                     "current_score": current_score,
                     "current_origin": current_origin,
@@ -853,42 +873,26 @@ class ReflACTTrainer:
         # ── Baseline evaluation on selection set ─────────────────────────
         if cfg.get("use_gate") is False:
             raise ValueError(
-                "Gate validation is mandatory in this branch. Remove "
-                "`evaluation.use_gate=false` from the config."
+                "Gate validation is mandatory in this branch. Remove `evaluation.use_gate=false` from the config."
             )
         gate_metric = str(cfg.get("gate_metric", "hard")).strip().lower()
         if gate_metric not in {"hard", "soft", "mixed"}:
-            raise ValueError(
-                f"evaluation.gate_metric must be 'hard' | 'soft' | 'mixed', "
-                f"got {gate_metric!r}"
-            )
+            raise ValueError(f"evaluation.gate_metric must be 'hard' | 'soft' | 'mixed', got {gate_metric!r}")
         gate_mixed_weight = float(cfg.get("gate_mixed_weight", 0.5))
         if not 0.0 <= gate_mixed_weight <= 1.0:
-            raise ValueError(
-                f"evaluation.gate_mixed_weight must be in [0, 1], "
-                f"got {gate_mixed_weight}"
-            )
+            raise ValueError(f"evaluation.gate_mixed_weight must be in [0, 1], got {gate_mixed_weight}")
         print(
-            f"  [gate] metric={gate_metric}"
-            + (
-                f" mixed_weight={gate_mixed_weight}"
-                if gate_metric == "mixed"
-                else ""
-            )
+            f"  [gate] metric={gate_metric}" + (f" mixed_weight={gate_mixed_weight}" if gate_metric == "mixed" else "")
         )
-        slow_gate_with_selection = bool(
-            cfg.get("slow_update_gate_with_selection", False)
-        )
+        slow_gate_with_selection = bool(cfg.get("slow_update_gate_with_selection", False))
         print(
             "  [slow update] acceptance="
-            + ("gated (selection-set validation)"
-               if slow_gate_with_selection
-               else "force-accept (unconditional)")
+            + ("gated (selection-set validation)" if slow_gate_with_selection else "force-accept (unconditional)")
         )
         if current_score < 0:
-            print(f"\n{'='*60}")
+            print(f"\n{'=' * 60}")
             print("  BASELINE — evaluate initial skill on Selection set (valid_seen)")
-            print(f"{'='*60}")
+            print(f"{'=' * 60}")
             sel_env, sel_n = _build_eval_env(
                 split="valid_seen",
                 env_num=cfg["sel_env_num"],
@@ -899,7 +903,10 @@ class ReflACTTrainer:
             baseline_results = adapter.rollout(sel_env, skill_init, baseline_dir)
             baseline_hard, baseline_soft = compute_score(baseline_results)
             current_score = select_gate_score(
-                baseline_hard, baseline_soft, gate_metric, gate_mixed_weight,
+                baseline_hard,
+                baseline_soft,
+                gate_metric,
+                gate_mixed_weight,
             )
             best_score = current_score
             sh = skill_hash(skill_init)
@@ -941,20 +948,12 @@ class ReflACTTrainer:
             # rejected edits) within this epoch so optimizers see full history.
             step_buffer: list[dict] = []
             active_meta_skill = (
-                _load_meta_skill_content(out_root, epoch - 1)
-                if cfg.get("use_meta_skill", False)
-                else ""
+                _load_meta_skill_content(out_root, epoch - 1) if cfg.get("use_meta_skill", False) else ""
             )
 
-            print(
-                f"\n  [EPOCH {epoch}/{num_epochs}] "
-                f"shuffled_seeds={shuffled_seeds}"
-            )
+            print(f"\n  [EPOCH {epoch}/{num_epochs}] shuffled_seeds={shuffled_seeds}")
             if active_meta_skill:
-                print(
-                    f"  [meta skill] loaded from epoch {epoch - 1} "
-                    f"({len(active_meta_skill)} chars)"
-                )
+                print(f"  [meta skill] loaded from epoch {epoch - 1} ({len(active_meta_skill)} chars)")
 
             for step_in_epoch in range(steps_per_epoch):
                 global_step += 1
@@ -967,11 +966,7 @@ class ReflACTTrainer:
 
                 tokens_before = get_token_summary()
 
-                print(
-                    f"\n  [STEP {global_step}/{total_steps}] "
-                    f"epoch={epoch} step_in_epoch={step_in_epoch} "
-                    f"{'='*30}"
-                )
+                print(f"\n  [STEP {global_step}/{total_steps}] epoch={epoch} step_in_epoch={step_in_epoch} {'=' * 30}")
 
                 step_rec: dict = {
                     "step": global_step,
@@ -1017,7 +1012,9 @@ class ReflACTTrainer:
                     t_phase = time.time()
                     print(f"    [1/6 ROLLOUT] train items={train_n} (from pool, batch_seed={batch_seed})")
                     rollout_results = adapter.rollout(
-                        train_env, current_skill, rollout_dir,
+                        train_env,
+                        current_skill,
+                        rollout_dir,
                         use_eval_feedback=True,
                     )
                     r_hard, r_soft = compute_score(rollout_results)
@@ -1033,8 +1030,11 @@ class ReflACTTrainer:
                     step_buffer_context = _format_step_buffer(step_buffer)
 
                     raw_patches = adapter.reflect(
-                        rollout_results, current_skill, batch_dir,
-                        prediction_dir=pred_dir, patches_dir=patches_dir,
+                        rollout_results,
+                        current_skill,
+                        batch_dir,
+                        prediction_dir=pred_dir,
+                        patches_dir=patches_dir,
                         random_seed=batch_seed,
                         step_buffer_context=step_buffer_context,
                         meta_skill_context=active_meta_skill,
@@ -1049,20 +1049,21 @@ class ReflACTTrainer:
                     total_reflect_time += time.time() - t_phase
 
                     print(
-                        f"    [2/6 done] failure_patches={len(failure_patches)} "
-                        f"success_patches={len(success_patches)}"
+                        f"    [2/6 done] failure_patches={len(failure_patches)} success_patches={len(success_patches)}"
                     )
 
                     # Track per-batch stats
-                    accum_rollout_stats.append({
-                        "batch_idx": a,
-                        "batch_seed": batch_seed,
-                        "n_envs": len(rollout_results),
-                        "hard": r_hard,
-                        "soft": r_soft,
-                        "n_failure_patches": len(failure_patches),
-                        "n_success_patches": len(success_patches),
-                    })
+                    accum_rollout_stats.append(
+                        {
+                            "batch_idx": a,
+                            "batch_seed": batch_seed,
+                            "n_envs": len(rollout_results),
+                            "hard": r_hard,
+                            "soft": r_soft,
+                            "n_failure_patches": len(failure_patches),
+                            "n_success_patches": len(success_patches),
+                        }
+                    )
 
                 # ── End of accumulation loop ─────────────────────────────
 
@@ -1110,8 +1111,11 @@ class ReflACTTrainer:
                 # ③ AGGREGATE ──────────────────────────────────────────────
                 t_phase = time.time()
                 merged_patch = merge_patches(
-                    current_skill, all_failure_patches, all_success_patches,
-                    batch_size=merge_bs, verbose=True,
+                    current_skill,
+                    all_failure_patches,
+                    all_success_patches,
+                    batch_size=merge_bs,
+                    verbose=True,
                     workers=cfg["analyst_workers"],
                     update_mode=update_mode,
                     meta_skill_context=active_meta_skill,
@@ -1154,15 +1158,22 @@ class ReflACTTrainer:
                         with open(os.path.join(step_dir, "lr_decision.json"), "w") as f:
                             json.dump(lr_decision, f, ensure_ascii=False, indent=2)
                         with open(os.path.join(out_root, "lr_history.jsonl"), "a") as f:
-                            f.write(json.dumps({
-                                "step": global_step,
-                                "epoch": epoch,
-                                **lr_decision,
-                            }, ensure_ascii=False) + "\n")
+                            f.write(
+                                json.dumps(
+                                    {
+                                        "step": global_step,
+                                        "epoch": epoch,
+                                        **lr_decision,
+                                    },
+                                    ensure_ascii=False,
+                                )
+                                + "\n"
+                            )
                     else:
                         edit_budget = scheduler.step()
                     ranked_patch = rank_and_select(
-                        current_skill, merged_patch,
+                        current_skill,
+                        merged_patch,
                         max_edits=edit_budget,
                         update_mode=update_mode,
                         meta_skill_context=active_meta_skill,
@@ -1179,9 +1190,7 @@ class ReflACTTrainer:
                         step_rec["lr_decision"] = lr_decision
                 step_rec["timing"]["select_s"] = round(time.time() - t_phase, 1)
 
-                support_counts = [
-                    item.get("support_count", 0) for item in ranked_items if isinstance(item, dict)
-                ]
+                support_counts = [item.get("support_count", 0) for item in ranked_items if isinstance(item, dict)]
                 step_rec["support_counts"] = support_counts
                 if is_full_rewrite_minibatch_mode(update_mode):
                     print(
@@ -1219,7 +1228,8 @@ class ReflACTTrainer:
                     skill_candidates = get_payload_items(ranked_patch, update_mode)
                     selected_candidate = next(
                         (
-                            item for item in skill_candidates
+                            item
+                            for item in skill_candidates
                             if isinstance(item, dict) and str(item.get("new_skill", "")).strip()
                         ),
                         None,
@@ -1262,23 +1272,13 @@ class ReflACTTrainer:
                 if apply_report:
                     step_rec["edit_apply_summary"] = {
                         "total": len(apply_report),
-                        "applied": sum(
-                            1 for row in apply_report if str(row.get("status", "")).startswith("applied")
-                        ),
-                        "skipped": sum(
-                            1 for row in apply_report if str(row.get("status", "")).startswith("skipped")
-                        ),
-                        "errors": sum(
-                            1 for row in apply_report if row.get("status") == "error"
-                        ),
+                        "applied": sum(1 for row in apply_report if str(row.get("status", "")).startswith("applied")),
+                        "skipped": sum(1 for row in apply_report if str(row.get("status", "")).startswith("skipped")),
+                        "errors": sum(1 for row in apply_report if row.get("status") == "error"),
                     }
                 step_rec["timing"]["update_s"] = round(time.time() - t_phase, 1)
-                if (
-                    update_mode == "rewrite_from_suggestions"
-                    and rewrite_result is None
-                ) or (
-                    is_full_rewrite_minibatch_mode(update_mode)
-                    and rewrite_result is None
+                if (update_mode == "rewrite_from_suggestions" and rewrite_result is None) or (
+                    is_full_rewrite_minibatch_mode(update_mode) and rewrite_result is None
                 ):
                     step_rec["action"] = "skip_no_rewrite"
                     step_rec["current_score"] = current_score
@@ -1294,19 +1294,13 @@ class ReflACTTrainer:
                         json.dump(step_rec, f, indent=2, ensure_ascii=False)
                     print("    [skip] no usable rewrite generated — skill unchanged")
                     continue
-                print(
-                    f"    [5/6 UPDATE] "
-                    f"skill_len {len(current_skill)} -> {len(candidate_skill)}"
-                )
+                print(f"    [5/6 UPDATE] skill_len {len(current_skill)} -> {len(candidate_skill)}")
 
                 # ⑥ EVALUATE ───────────────────────────────────────────────
                 t_phase = time.time()
                 if cand_hash in sel_cache:
                     cand_hard, cand_soft = sel_cache[cand_hash]
-                    print(
-                        f"    [6/6 EVALUATE] "
-                        f"cache hit {cand_hash}: hard={cand_hard:.4f}"
-                    )
+                    print(f"    [6/6 EVALUATE] cache hit {cand_hash}: hard={cand_hard:.4f}")
                 else:
                     sel_env, sel_n = _build_eval_env(
                         split="valid_seen",
@@ -1336,7 +1330,10 @@ class ReflACTTrainer:
                     mixed_weight=gate_mixed_weight,
                 )
                 cand_gate_score = select_gate_score(
-                    cand_hard, cand_soft, gate_metric, gate_mixed_weight,
+                    cand_hard,
+                    cand_soft,
+                    gate_metric,
+                    gate_mixed_weight,
                 )
                 step_rec["gate_metric"] = gate_metric
                 step_rec["candidate_gate_score"] = cand_gate_score
@@ -1363,20 +1360,11 @@ class ReflACTTrainer:
                         f"(hard={cand_hard:.4f} soft={cand_soft:.4f})"
                     )
                 if gate.action == "accept_new_best":
-                    print(
-                        f"    [6/6 EVALUATE] ACCEPT (new best) "
-                        f"{score_label} > prev best {prev_best:.4f}"
-                    )
+                    print(f"    [6/6 EVALUATE] ACCEPT (new best) {score_label} > prev best {prev_best:.4f}")
                 elif gate.action == "accept":
-                    print(
-                        f"    [6/6 EVALUATE] ACCEPT "
-                        f"{score_label} > current={prev_current:.4f}"
-                    )
+                    print(f"    [6/6 EVALUATE] ACCEPT {score_label} > current={prev_current:.4f}")
                 else:
-                    print(
-                        f"    [6/6 EVALUATE] REJECT "
-                        f"{score_label} <= current={current_score:.4f}"
-                    )
+                    print(f"    [6/6 EVALUATE] REJECT {score_label} <= current={current_score:.4f}")
 
                 step_rec["timing"]["evaluate_s"] = round(time.time() - t_phase, 1)
 
@@ -1385,7 +1373,8 @@ class ReflACTTrainer:
                 n_total = len(all_rollout_results) or 1
                 n_fail = sum(1 for r in all_rollout_results if not r.get("hard") or float(r.get("hard", 0)) < 1e-9)
                 failure_patterns = _extract_failure_patterns(
-                    all_rollout_results, step_dir,
+                    all_rollout_results,
+                    step_dir,
                 )
 
                 buf_entry: dict = {
@@ -1399,9 +1388,7 @@ class ReflACTTrainer:
                 # Attach rejected edits when the step was rejected
                 if "reject" in action and ranked_patch:
                     rejected_edits = [
-                        short_item_summary(item, update_mode)
-                        for item in ranked_items
-                        if isinstance(item, dict)
+                        short_item_summary(item, update_mode) for item in ranked_items if isinstance(item, dict)
                     ]
                     buf_entry["score_before"] = current_score
                     buf_entry["score_after"] = cand_gate_score
@@ -1424,10 +1411,8 @@ class ReflACTTrainer:
                     before = tokens_before.get(stage, {})
                     step_tokens[stage] = {
                         "calls": after.get("calls", 0) - before.get("calls", 0),
-                        "prompt_tokens": after.get("prompt_tokens", 0)
-                        - before.get("prompt_tokens", 0),
-                        "completion_tokens": after.get("completion_tokens", 0)
-                        - before.get("completion_tokens", 0),
+                        "prompt_tokens": after.get("prompt_tokens", 0) - before.get("prompt_tokens", 0),
+                        "completion_tokens": after.get("completion_tokens", 0) - before.get("completion_tokens", 0),
                     }
                 step_rec["tokens"] = step_tokens
 
@@ -1455,11 +1440,11 @@ class ReflACTTrainer:
                     f"epoch={epoch} action={step_rec['action']} "
                     f"current={current_score:.4f} best={best_score:.4f} "
                     f"dt={step_rec['wall_time_s']}s\n"
-                    f"    timing: rollout={timing.get('rollout_s',0)}s "
-                    f"reflect={timing.get('reflect_s',0)}s "
-                    f"aggregate={timing.get('aggregate_s',0)}s "
-                    f"select={timing.get('select_s',0)}s "
-                    f"evaluate={timing.get('evaluate_s',0)}s"
+                    f"    timing: rollout={timing.get('rollout_s', 0)}s "
+                    f"reflect={timing.get('reflect_s', 0)}s "
+                    f"aggregate={timing.get('aggregate_s', 0)}s "
+                    f"select={timing.get('select_s', 0)}s "
+                    f"evaluate={timing.get('evaluate_s', 0)}s"
                 )
 
             epoch_last_step_skill = current_skill
@@ -1473,10 +1458,7 @@ class ReflACTTrainer:
 
                 if os.path.exists(slow_done_path):
                     # Resume support
-                    print(
-                        f"\n  [SLOW UPDATE epoch {epoch}] "
-                        f"resumed — already done"
-                    )
+                    print(f"\n  [SLOW UPDATE epoch {epoch}] resumed — already done")
                     with open(slow_done_path) as f:
                         slow_saved = json.load(f)
                     comparison_path = os.path.join(slow_dir, "comparison_pairs.json")
@@ -1486,10 +1468,7 @@ class ReflACTTrainer:
                                 epoch_comparison_pairs = json.load(f)
                         except Exception:
                             epoch_comparison_pairs = None
-                    if (
-                        slow_saved.get("slow_update_content")
-                        and epoch >= 2
-                    ):
+                    if slow_saved.get("slow_update_content") and epoch >= 2:
                         action = slow_saved.get("action")
                         if slow_gate_with_selection:
                             # Gated mode (follow SkillReflection): re-apply the
@@ -1500,14 +1479,18 @@ class ReflACTTrainer:
                                     slow_saved["slow_update_content"],
                                 )
                         elif action in {
-                            "accept", "accept_new_best", "force_accept",
+                            "accept",
+                            "accept_new_best",
+                            "force_accept",
                         }:
                             # Force-accept mode: re-apply to both current & best.
                             current_skill = replace_slow_update_field(
-                                current_skill, slow_saved["slow_update_content"],
+                                current_skill,
+                                slow_saved["slow_update_content"],
                             )
                             best_skill = replace_slow_update_field(
-                                best_skill, slow_saved["slow_update_content"],
+                                best_skill,
+                                slow_saved["slow_update_content"],
                             )
                 elif epoch == 1:
                     # Epoch 1: inject empty placeholder
@@ -1520,24 +1503,19 @@ class ReflACTTrainer:
                     with open(slow_done_path, "w") as f:
                         json.dump({"action": "inject_placeholder", "epoch": epoch}, f, indent=2)
                     _persist_runtime_state(global_step)
-                    print(
-                        f"\n  [SLOW UPDATE epoch {epoch}] "
-                        f"injected empty placeholder"
-                    )
+                    print(f"\n  [SLOW UPDATE epoch {epoch}] injected empty placeholder")
                 else:
                     # Epoch 2+: longitudinal comparison
                     os.makedirs(slow_dir, exist_ok=True)
                     print(
-                        f"\n  {'='*60}\n"
+                        f"\n  {'=' * 60}\n"
                         f"  SLOW UPDATE — Epoch {epoch} "
-                        f"(comparing epoch {epoch-1} vs {epoch})\n"
-                        f"  {'='*60}"
+                        f"(comparing epoch {epoch - 1} vs {epoch})\n"
+                        f"  {'=' * 60}"
                     )
 
                     # 1. Get skill from last step of previous epoch
-                    prev_epoch_records = [
-                        h for h in history if h.get("epoch") == epoch - 1
-                    ]
+                    prev_epoch_records = [h for h in history if h.get("epoch") == epoch - 1]
                     prev_epoch_last_step = prev_epoch_records[-1]["step"]
                     prev_skill = _load_skill(out_root, prev_epoch_last_step)
 
@@ -1551,7 +1529,8 @@ class ReflACTTrainer:
                             out_root=out_root,
                         )
                         slow_env = adapter.build_env_from_batch(
-                            slow_batch, out_root=out_root,
+                            slow_batch,
+                            out_root=out_root,
                         )
                     else:
                         slow_env = adapter.build_train_env(
@@ -1571,10 +1550,7 @@ class ReflACTTrainer:
 
                     prev_hard, _ = compute_score(results_prev)
                     curr_hard, _ = compute_score(results_curr)
-                    print(
-                        f"    [slow update] prev epoch hard={prev_hard:.4f}  "
-                        f"curr epoch hard={curr_hard:.4f}"
-                    )
+                    print(f"    [slow update] prev epoch hard={prev_hard:.4f}  curr epoch hard={curr_hard:.4f}")
 
                     # 4. Build and save structured comparison pairs
                     comparison_pairs, all_comparison_pairs = _build_longitudinal_pairs(
@@ -1633,7 +1609,8 @@ class ReflACTTrainer:
 
                     if slow_result and slow_result.get("slow_update_content"):
                         slow_candidate = replace_slow_update_field(
-                            current_skill, slow_result["slow_update_content"],
+                            current_skill,
+                            slow_result["slow_update_content"],
                         )
                         slow_candidate_hash = skill_hash(slow_candidate)
                         with open(os.path.join(slow_dir, "candidate_skill.md"), "w") as f:
@@ -1644,8 +1621,7 @@ class ReflACTTrainer:
                         slow_result["candidate_hash"] = slow_candidate_hash
                         slow_result["update_origin"] = "slow_update_momentum"
                         slow_result["update_target"] = (
-                            "Address longitudinal regressions and persistent failures "
-                            "observed across adjacent epochs."
+                            "Address longitudinal regressions and persistent failures observed across adjacent epochs."
                         )
 
                         # Slow update acceptance — two modes selected via
@@ -1656,13 +1632,8 @@ class ReflACTTrainer:
                             # selection set and accept/reject via the same
                             # validation gate used for step-level updates.
                             if slow_candidate_hash in sel_cache:
-                                slow_sel_hard, slow_sel_soft = sel_cache[
-                                    slow_candidate_hash
-                                ]
-                                print(
-                                    f"    [slow gate] cache hit: "
-                                    f"hard={slow_sel_hard:.4f}"
-                                )
+                                slow_sel_hard, slow_sel_soft = sel_cache[slow_candidate_hash]
+                                print(f"    [slow gate] cache hit: hard={slow_sel_hard:.4f}")
                             else:
                                 sel_env, sel_n = _build_eval_env(
                                     split="valid_seen",
@@ -1671,16 +1642,18 @@ class ReflACTTrainer:
                                 )
                                 print(f"    [slow gate] selection items={sel_n}")
                                 slow_eval_dir = os.path.join(
-                                    slow_dir, "selection_eval",
+                                    slow_dir,
+                                    "selection_eval",
                                 )
                                 slow_eval_results = adapter.rollout(
-                                    sel_env, slow_candidate, slow_eval_dir,
+                                    sel_env,
+                                    slow_candidate,
+                                    slow_eval_dir,
                                 )
-                                slow_sel_hard, slow_sel_soft = compute_score(
-                                    slow_eval_results
-                                )
+                                slow_sel_hard, slow_sel_soft = compute_score(slow_eval_results)
                                 sel_cache[slow_candidate_hash] = (
-                                    slow_sel_hard, slow_sel_soft,
+                                    slow_sel_hard,
+                                    slow_sel_soft,
                                 )
 
                             slow_gate = evaluate_gate(
@@ -1707,9 +1680,7 @@ class ReflACTTrainer:
                             best_score = slow_gate.best_score
                             best_step = slow_gate.best_step
                             if slow_gate.action in {"accept", "accept_new_best"}:
-                                current_origin = (
-                                    f"slow_update_epoch_{epoch:02d}"
-                                )
+                                current_origin = f"slow_update_epoch_{epoch:02d}"
                             if slow_gate.action == "accept_new_best":
                                 best_origin = current_origin
                                 print(
@@ -1718,17 +1689,9 @@ class ReflACTTrainer:
                                     f"prev best {prev_best:.4f}"
                                 )
                             elif slow_gate.action == "accept":
-                                print(
-                                    f"    [slow gate] ACCEPT "
-                                    f"hard={slow_sel_hard:.4f} > "
-                                    f"current={prev_current:.4f}"
-                                )
+                                print(f"    [slow gate] ACCEPT hard={slow_sel_hard:.4f} > current={prev_current:.4f}")
                             else:
-                                print(
-                                    f"    [slow gate] REJECT "
-                                    f"hard={slow_sel_hard:.4f} <= "
-                                    f"current={current_score:.4f}"
-                                )
+                                print(f"    [slow gate] REJECT hard={slow_sel_hard:.4f} <= current={current_score:.4f}")
                             print(
                                 f"    [slow update] guidance written "
                                 f"({len(slow_result['slow_update_content'])} "
@@ -1742,10 +1705,12 @@ class ReflACTTrainer:
                             # step-level selection scores.
                             slow_content = slow_result["slow_update_content"]
                             current_skill = replace_slow_update_field(
-                                current_skill, slow_content,
+                                current_skill,
+                                slow_content,
                             )
                             best_skill = replace_slow_update_field(
-                                best_skill, slow_content,
+                                best_skill,
+                                slow_content,
                             )
                             # Update caches so downstream steps use the
                             # slow-update-injected skill for hashing.
@@ -1765,10 +1730,7 @@ class ReflACTTrainer:
                         slow_result = slow_result or {}
                         slow_result["action"] = "no_content"
                         slow_result["time_s"] = slow_time
-                        print(
-                            f"    [slow update] no guidance produced, "
-                            f"{slow_time}s"
-                        )
+                        print(f"    [slow update] no guidance produced, {slow_time}s")
 
                     # 5. Save
                     with open(slow_done_path, "w") as f:
@@ -1778,10 +1740,7 @@ class ReflACTTrainer:
                         f.write(best_skill)
                     _persist_runtime_state(global_step)
 
-                    print(
-                        f"\n  [SLOW UPDATE epoch {epoch} done] "
-                        f"current={current_score:.4f} best={best_score:.4f}"
-                    )
+                    print(f"\n  [SLOW UPDATE epoch {epoch} done] current={current_score:.4f} best={best_score:.4f}")
 
             # ── META SKILL (end of epoch, optimizer-side memory) ─────────
             use_meta_skill = cfg.get("use_meta_skill", False)
@@ -1796,15 +1755,17 @@ class ReflACTTrainer:
                     with open(meta_skill_done_path, "w") as f:
                         json.dump(
                             {"action": "skip_first_epoch", "epoch": epoch},
-                            f, indent=2, ensure_ascii=False,
+                            f,
+                            indent=2,
+                            ensure_ascii=False,
                         )
                     print(f"\n  [META SKILL epoch {epoch}] skipped — first epoch")
                 else:
                     print(
-                        f"\n  {'='*60}\n"
+                        f"\n  {'=' * 60}\n"
                         f"  META SKILL — Epoch {epoch} "
-                        f"(optimizer memory from epoch {epoch-1} vs {epoch})\n"
-                        f"  {'='*60}"
+                        f"(optimizer memory from epoch {epoch - 1} vs {epoch})\n"
+                        f"  {'=' * 60}"
                     )
 
                     prev_epoch_records = [h for h in history if h.get("epoch") == epoch - 1]
@@ -1822,7 +1783,8 @@ class ReflACTTrainer:
                                 out_root=out_root,
                             )
                             meta_env = adapter.build_env_from_batch(
-                                meta_batch, out_root=out_root,
+                                meta_batch,
+                                out_root=out_root,
                             )
                         else:
                             meta_env = adapter.build_train_env(
@@ -1900,10 +1862,7 @@ class ReflACTTrainer:
         with open(os.path.join(out_root, "best_skill.md"), "w") as f:
             f.write(best_skill)
         _persist_runtime_state(global_step)
-        print(
-            f"\n  [done] best skill from step {best_step}, "
-            f"score={best_score:.4f}"
-        )
+        print(f"\n  [done] best skill from step {best_step}, score={best_score:.4f}")
 
         # ── Final test evaluation (valid_unseen) ─────────────────────────
         baseline_test_hard = None
@@ -1915,9 +1874,9 @@ class ReflACTTrainer:
             task_types = adapter.get_task_types()
 
             # Baseline: S_0 on test set (valid_unseen)
-            print(f"\n{'='*60}")
+            print(f"\n{'=' * 60}")
             print("  BASELINE TEST — evaluate initial skill on Test set (valid_unseen)")
-            print(f"{'='*60}")
+            print(f"{'=' * 60}")
             test_env, test_n = _build_eval_env(
                 split="valid_unseen",
                 env_num=cfg["test_env_num"],
@@ -1932,10 +1891,7 @@ class ReflACTTrainer:
             for task_type in task_types + ["overall"]:
                 b = baseline_buckets.get(task_type, {"total": 0, "hard": 0})
                 t = max(b["total"], 1)
-                print(
-                    f"    {task_type:<40s}: "
-                    f"hard={b['hard']}/{b['total']}={b['hard']/t:.4f}"
-                )
+                print(f"    {task_type:<40s}: hard={b['hard']}/{b['total']}={b['hard'] / t:.4f}")
             with open(os.path.join(baseline_test_dir, "summary.json"), "w") as f:
                 json.dump(
                     {
@@ -1945,13 +1901,15 @@ class ReflACTTrainer:
                         }
                         for k, b in baseline_buckets.items()
                     },
-                    f, indent=2, ensure_ascii=False,
+                    f,
+                    indent=2,
+                    ensure_ascii=False,
                 )
 
             # Best skill on test set
-            print(f"\n{'='*60}")
+            print(f"\n{'=' * 60}")
             print("  BEST SKILL TEST — evaluate best skill on Test set (valid_unseen)")
-            print(f"{'='*60}")
+            print(f"{'=' * 60}")
             test_env2, test_n2 = _build_eval_env(
                 split="valid_unseen",
                 env_num=cfg["test_env_num"],
@@ -1966,10 +1924,7 @@ class ReflACTTrainer:
             for task_type in task_types + ["overall"]:
                 b = best_buckets.get(task_type, {"total": 0, "hard": 0})
                 t = max(b["total"], 1)
-                print(
-                    f"    {task_type:<40s}: "
-                    f"hard={b['hard']}/{b['total']}={b['hard']/t:.4f}"
-                )
+                print(f"    {task_type:<40s}: hard={b['hard']}/{b['total']}={b['hard'] / t:.4f}")
             with open(os.path.join(test_dir, "summary.json"), "w") as f:
                 json.dump(
                     {
@@ -1979,16 +1934,15 @@ class ReflACTTrainer:
                         }
                         for k, b in best_buckets.items()
                     },
-                    f, indent=2, ensure_ascii=False,
+                    f,
+                    indent=2,
+                    ensure_ascii=False,
                 )
 
             # Comparison
             delta_hard = (test_hard or 0) - (baseline_test_hard or 0)
-            print(f"\n  === Improvement (best vs baseline) ===")
-            print(
-                f"    hard: {baseline_test_hard:.4f} -> {test_hard:.4f}  "
-                f"(delta={delta_hard:+.4f})"
-            )
+            print("\n  === Improvement (best vs baseline) ===")
+            print(f"    hard: {baseline_test_hard:.4f} -> {test_hard:.4f}  (delta={delta_hard:+.4f})")
 
         # ── Global summary ───────────────────────────────────────────────
         total_wall = time.time() - t_loop_start
@@ -2003,21 +1957,24 @@ class ReflACTTrainer:
         for e in range(1, num_epochs + 1):
             epoch_records = [h for h in history if h.get("epoch") == e]
             if epoch_records:
-                epoch_stats.append({
-                    "epoch": e,
-                    "steps": [h["step"] for h in epoch_records],
-                    "accepts": sum(1 for h in epoch_records if "accept" in h.get("action", "")),
-                    "rejects": sum(1 for h in epoch_records if h.get("action") == "reject"),
-                    "skips": sum(1 for h in epoch_records if h.get("action") == "skip_no_patches"),
-                    "best_score_at_epoch_end": epoch_records[-1].get("best_score", 0.0),
-                    "current_score_at_epoch_end": epoch_records[-1].get("current_score", 0.0),
-                })
+                epoch_stats.append(
+                    {
+                        "epoch": e,
+                        "steps": [h["step"] for h in epoch_records],
+                        "accepts": sum(1 for h in epoch_records if "accept" in h.get("action", "")),
+                        "rejects": sum(1 for h in epoch_records if h.get("action") == "reject"),
+                        "skips": sum(1 for h in epoch_records if h.get("action") == "skip_no_patches"),
+                        "best_score_at_epoch_end": epoch_records[-1].get("best_score", 0.0),
+                        "current_score_at_epoch_end": epoch_records[-1].get("current_score", 0.0),
+                    }
+                )
 
         summary = {
             "version": "skillopt-0.1.0",
             "config": _redact_cfg(cfg),
             "baseline_selection_hard": sel_cache.get(
-                skill_hash(skill_init), (None, None),
+                skill_hash(skill_init),
+                (None, None),
             )[0],
             "best_selection_hard": best_score,
             "best_step": best_step,
@@ -2032,24 +1989,17 @@ class ReflACTTrainer:
             "baseline_test_soft": baseline_test_soft,
             "test_hard": test_hard,
             "test_soft": test_soft,
-            "test_delta_hard": (
-                (test_hard or 0) - (baseline_test_hard or 0)
-                if test_hard is not None
-                else None
-            ),
+            "test_delta_hard": ((test_hard or 0) - (baseline_test_hard or 0) if test_hard is not None else None),
             "total_wall_time_s": round(total_wall, 1),
             "token_summary": token_summary,
         }
         with open(os.path.join(out_root, "summary.json"), "w") as f:
             json.dump(summary, f, indent=2, ensure_ascii=False)
 
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("  Final Summary")
-        print(f"{'='*60}")
-        print(
-            f"  steps={len(history)} accept={n_accept} "
-            f"reject={n_reject} skip={n_skip}"
-        )
+        print(f"{'=' * 60}")
+        print(f"  steps={len(history)} accept={n_accept} reject={n_reject} skip={n_skip}")
         print(f"  best_score={best_score:.4f} (step {best_step})  wall={total_wall:.0f}s")
         if epoch_stats:
             for es in epoch_stats:
